@@ -1,2 +1,3 @@
-In these codes the finite difference method is used to solve the Schrodinger equation for some potentials. Obviously, for a more precise result, the discretization must be denser.
+In these codes the finite difference method is used to solve the Schrodinger equation for some potentials.
+The precision is of O (h^2) and since h = L / n with n number of points, the states with high energy being spatially more extended require a greater L and consequently a greater n to keep h small.
 There is also an animation for the tunnel effect with the repulsive barrier potential (ACHTUG there is no time dependence in animation).
