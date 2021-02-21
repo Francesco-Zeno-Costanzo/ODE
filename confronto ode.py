@@ -5,7 +5,7 @@ o0=9
 v0=1
 x0=0
 '''
-x''(t)=-o*x(t)
+x''(t)=-o0*x(t)
 x'(0)=v0
 x(0)=x0
 '''
@@ -118,6 +118,26 @@ plt.legend(loc='best')
 plt.grid()
 plt.subplot(414)
 plt.plot(t, Sol(t)-xs2, 'k', label='Runge Kutta 4')
+plt.legend(loc='best')
+plt.grid()
+
+##grafico dell'energia
+plt.figure(3)
+plt.subplot(411)
+plt.title('Energia del sistema nel tempo', fontsize=20)
+plt.plot(t, sol[:, 1]**2 + o0*sol[:,0]**2 , 'k', label='odeint')
+plt.legend(loc='best')
+plt.grid()
+plt.subplot(412)
+plt.plot(t, vs**2 + o0*xs**2, 'k', label='Eulero')
+plt.legend(loc='best')
+plt.grid()
+plt.subplot(413)
+plt.plot(t, vs1**2 + o0*xs1**2, 'k', label='Eulero semi implicito (integratore simplettico)')
+plt.legend(loc='best')
+plt.grid()
+plt.subplot(414)
+plt.plot(t, vs2**2 + o0*xs2**2, 'k', label='Runge Kutta 4')
 plt.legend(loc='best')
 plt.grid()
 plt.show()
