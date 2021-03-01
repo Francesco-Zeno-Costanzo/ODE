@@ -67,5 +67,5 @@ plt.errorbar(xp, psi[:,m-1]**2-(x*G(x, m, 0))**2, fmt='.')
 plt.grid()
 
 plt.show()
-print("--- %s seconds ---" % (time.time() - start_time - b))
+print("--- %s seconds ---" % (time.time() - start_time - b-a))
 print(avals[0:m])
