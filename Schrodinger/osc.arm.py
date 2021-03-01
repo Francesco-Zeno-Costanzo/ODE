@@ -58,5 +58,5 @@ plt.grid()
 plt.errorbar(xp, psi[:,m]-G(x, m), fmt='.')
 
 plt.show()
-print("--- %s seconds ---" % (time.time() - start_time-b))
+print("--- %s seconds ---" % (time.time() - start_time-b-a))
 print(avals[0:m]-(1/2 + np.linspace(0, m-1, m)))
