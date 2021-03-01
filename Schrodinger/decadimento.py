@@ -61,6 +61,6 @@ plt.plot(x,np.ones(len(x))*avals[k], color='black', linestyle='--', label='$E_{%
 
 plt.legend(loc='best')
 plt.show()
-print("--- %s seconds ---" % (time.time() - start_time-b))
+print("--- %s seconds ---" % (time.time() - start_time-b-a))
 print(avals[0:m])
 
