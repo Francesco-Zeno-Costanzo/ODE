@@ -61,7 +61,7 @@ plt.errorbar(xp, psi[:,m]-G(x, m), fmt='.')
 plt.grid()
 
 plt.show()
-print("--- %s seconds ---" % (time.time() - start_time-b))
+print("--- %s seconds ---" % (time.time() - start_time-b-a))
 
 E=np.array([])
 N=int(np.sqrt(2*B)-0.5)
