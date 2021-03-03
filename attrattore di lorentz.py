@@ -29,7 +29,7 @@ for i in range(num_steps):
     zs[i + 1] = zs[i] + (z_dot * dt)
 
 
-fig = plt.figure()
+fig = plt.figure(1)
 ax = fig.gca(projection='3d')
 
 
@@ -51,8 +51,9 @@ def animate(i):
 
 anim = animation.FuncAnimation(fig, animate, frames=num_steps, interval=0.1, blit=True, repeat=True)
 #anim.save('Lorenz Attractor.mp4', fps=300, extra_args=['-vcodec', 'libx264'])
-
-fig1 = plt.figure()
+plt.show()
+##
+fig1 = plt.figure(2)
 ax1 = fig1.gca(projection='3d')
 plt.grid()
 
