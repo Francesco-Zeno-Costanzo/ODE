@@ -41,7 +41,7 @@ y = sol[:, 2]
 z = sol[:, 4]
 
 #Grafico 3D
-fig = plt.figure()
+fig = plt.figure(1)
 ax = fig.gca(projection='3d')
 plt.grid()
 #titolo e nome assi
@@ -69,8 +69,9 @@ def animate(i):
 anim = animation.FuncAnimation(fig, animate, frames=T, interval=1, blit=True, repeat=True) #questa è l'animazione vera e propria, a cui passi il grafico, la funzione che anima, la funzione di init, il numero di fotogrammi, bilt lo lasci true perchè l'animazione è migliore, e repeat si spiega da solo
 
 #anim.save('P_EM.mp4', fps=50, extra_args=['-vcodec', 'libx264']) #salva sulla cartella corrente l'animazione
-
-fig1 = plt.figure()
+plt.show()
+##
+fig1 = plt.figure(2)
 ax1 = fig1.gca(projection='3d')
 plt.grid()
 
