@@ -2,7 +2,7 @@ import numpy as np
 import scipy as sp
 import matplotlib.pyplot as plt
 from scipy import constants as cst
-#Da un'idea di Mattia Recchi.
+#Da un'idea e con l'aiuto di Mattia Recchi.
 
 step=20000
 dt=1E-5
