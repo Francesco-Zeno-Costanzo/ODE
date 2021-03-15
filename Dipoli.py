@@ -2,6 +2,7 @@ import numpy as np
 import scipy as sp
 import matplotlib.pyplot as plt
 from scipy import constants as cst
+#Da un'idea di Mattia Recchi.
 
 step=20000
 dt=1E-5
@@ -23,23 +24,19 @@ def E(x,y):
     return Ex, Ey
 
 def g(x, y, vx, vy, o, w):
-    #............... f originaria per la forza
+    #Calcolo della forza
     P=np.array([p*np.cos(o),p*np.sin(o)])
     dEx=np.array([(E(x+l,y)[0]-E(x,y)[0])/l,(E(x+l,y)[1]-E(x,y)[1])/l])
     dEy=np.array([(E(x,y+l)[0]-E(x,y)[0])/l,(E(x,y+l)[1]-E(x,y)[1])/l])
     Fx=(P[0]*dEx[0]+P[1]*dEx[1])
     Fy=(P[0]*dEy[0]+P[1]*dEy[1])
-    #...............
     x_dot=vx
     y_dot=vy
     vx_dot=Fx/m
     vy_dot=Fy/m
-    #.............. f originaria pe il momento
-    #P=np.array([p*np.cos(o),p*np.sin(o)])
+    #Calcolo del momento
     M=np.array([0], dtype=float)
     M[0]=(P[0]*E(x, y)[1]-P[1]*E(x, y)[0])
-    #M[0]=np.cross(P,E(x,y))
-    #..............
     o_dot= w
     w_dot=M[0]/I
     return x_dot, y_dot, vx_dot, vy_dot, o_dot, w_dot
