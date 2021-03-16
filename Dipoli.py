@@ -76,13 +76,8 @@ for i in range(len(xp)):
 U=m*(vx**2 + vy**2)/2 + I*(wp**2)/2 - pE
 
 n=1000
-Mx=np.max(xp)
-My=np.max(yp)
-if Mx and My > 15:
-    xlim, ylim = 15, 15
-else:
-    xlim, ylim = Mx+0.5, My+0.5
 
+xlim, ylim = 1.5, 1.5
 a = np.linspace(-xlim,xlim,n)
 b = np.linspace(-ylim,ylim,n)
 x, y = np.meshgrid(a,b)
