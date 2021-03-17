@@ -137,26 +137,6 @@ for i in range(num_steps):
     xs4[i + 1] = xs4[i] + (dt/6)*(xk1 + 2*xk2 + 2*xk3 + xk4)
     vs4[i + 1] = vs4[i] + (dt/6)*(vk1 + 2*vk2 + 2*vk3 + vk4)
     ts4[i + 1] = ts4[i] + dt
-'''
-def f(v):
-    x_dot = v
-    return x_dot
-def g(x):
-    v_dot = - o0*x
-    return v_dot
-for i in range(num_steps):
-    xk1 = f(vs2[i])
-    vk1 = g(xs2[i])
-    xk2 = f(vs2[i]+ vk1*dt/2)
-    vk2 = g(xs2[i]+ xk1*dt/2)
-    xk3 = f(vs2[i]+ vk2*dt/2)
-    vk3 = g(xs2[i]+ xk2*dt/2)
-    xk4 = f(vs2[i]+ vk3*dt)
-    vk4 = g(xs2[i]+ xk3*dt)
-    xs2[i + 1] = xs2[i] + (dt/6)*(xk1 + 2*xk2 + 2*xk3 + xk4)
-    vs2[i + 1] = vs2[i] + (dt/6)*(vk1 + 2*vk2 + 2*vk3 + vk4)
-    ts2[i + 1] = ts2[i] + dt
-'''
 
 ##Soluzione numerica con il metodo del punto medio implicito
 '''
