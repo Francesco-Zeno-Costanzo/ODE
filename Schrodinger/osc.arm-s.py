@@ -31,8 +31,8 @@ def F(y, xi, params) :
 
 def Epsi(params, xi, n, EigvStart, step, tau, F, psi):
     #primo estremo
-    eigv1=EigvStart
-    params[0]=eigv1
+    E1=EigvStart
+    params[0]=E1
     if n%2==0: #parità della spi
         y=[1.0, 0.0]
     else:
@@ -41,36 +41,36 @@ def Epsi(params, xi, n, EigvStart, step, tau, F, psi):
     PsiEnd1=sol[-1,0]
     #secondo estremo
     while True:
-        eigv2=eigv1+step
-        params[0]=eigv2
+        E2=E1+step
+        params[0]=E2
         sol=si.odeint(F, y, xi, args=(params, ))
         PsiEnd2=sol[-1, 0]
         if (PsiEnd1*PsiEnd2)<0.0:
             break
         PsiEnd1=PsiEnd2
-        eigv1=eigv2
+        E1=E2
     #ricerca dell'autovalore
     while True:
-        eigvmid=(eigv1+eigv2)/2.0
-        params[0]=eigvmid
-        if abs(eigv1-eigv2)<tau :
+        Em=(E1+E2)/2.0
+        params[0]=Em
+        if abs(E1-E2)<tau :
             break
         sol=si.odeint(F, y, xi, args=(params, ))
-        PsiEndMid=sol[-1, 0]
-        if (PsiEndMid*PsiEnd1)>0 :
-            PsiEnd1=PsiEndMid
-            eigv1=eigvmid
+        PsiEndM=sol[-1, 0]
+        if (PsiEndM*PsiEnd1)>0 :
+            PsiEnd1=PsiEndM
+            E1=Em
         else :
-            PsiEnd2=PsiEndMid
-            eigv2=eigvmid
+            PsiEnd2=PsiEndM
+            E2=Em
     del psi[ : ]
     for i in range(len(xi)) :
         psi.append(sol[i, 0])
-    return eigvmid
+    return Em
 
 
 eigv=Epsi(params, xi, n, EigvStart ,step, tau , F, psi)
-print(eigv)
+print("E_%d = %f"%(n, eigv))
 
 # elimino divergenze
 while True:
@@ -82,8 +82,8 @@ if len(psi)<(nP+1):
         psi.append(0.0)
 
 #normalizzazione
-NormFact=np.sqrt(2.0*si.simps(np.square(psi), dx=DeltaXi, even='first' ))
-normpsi=psi/NormFact
+Norm=np.sqrt(2.0*si.simps(np.square(psi), dx=DeltaXi, even='first' ))
+normpsi=psi/Norm
 psineg=list(reversed(normpsi))
 if n%2==1: #  per n dispari le funzioni sono dispare
     for k in range( len(psineg ) ) :
