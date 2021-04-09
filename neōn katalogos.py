@@ -141,7 +141,7 @@ for i in range(num_steps):
 ##Soluzione numerica con il metodo del punto medio implicito
 '''
 y'=f(t, y)
-y[i+1]=y[i]+dt*f(t[i]+dt/2, (y[i+1]+y[i])/2)
+y[i+1]=y[i]+dt*f(t[i] + dt/2, (y[i+1]+y[i])/2)
 nel nostro caso va risolto il sitema
 v[i+1] = v[i] -o0*dt*(x[i+1] + x[i])/2
 x[i+1] = x[i]    +dt*(v[i+1] + v[i])/2
@@ -178,12 +178,13 @@ for i in range(num_steps):
 
 ##Soluzione numerica con il metodo ruth3-4 (integratore simplettico)
 
-def F(x):
+def G(x):
     return - o0*x
 
 #coefficienti ruth 3
 c = np.array([2/3, -2/3, 1])
 d = np.array([7/24, 3/4, -1/24])
+
 '''
 #coefficienti ruth 4
 l=2**(1/3)
@@ -203,11 +204,70 @@ xs6[0], vs6[0] = (x0, v0)
 for i in range(num_steps):
     x, v = xs6[i], vs6[i]
     for k in range(len(d)):
-        v+=d[k]*F(x)*dt
+        v+=d[k]*G(x)*dt
         x+=c[k]*v*dt
     xs6[i + 1] = x
     vs6[i + 1] = v
     ts6[i + 1] = ts6[i] + dt
+
+##Soluzione numerica con il predizione- correzzione usando il metodo di eulero e quello dei trapezi
+
+def P(x, v):
+    x_dot = v
+    v_dot = - o0*x
+    return x_dot, v_dot
+
+num_steps = 10000
+dt = xf/num_steps
+
+
+xs7 = np.zeros(num_steps + 1)
+vs7 = np.zeros(num_steps + 1)
+ts7 = np.zeros(num_steps + 1)
+
+xs7[0], vs7[0]=(x0, v0)
+
+for i in range(num_steps):
+    x00, v00 = P(xs7[i], vs7[i])
+    xp = xs7[i] + dt*x00       #predico
+    vp = vs7[i] + dt*v00
+    ts7[i + 1] = ts7[i] + dt
+    xc, vc = P(xp, vp)
+    xs7[i + 1] = xs7[i] + (1/2)*dt*(x00 + xc)   #correggo
+    vs7[i + 1] = vs7[i] + (1/2)*dt*(v00 + vc)
+
+##Soluzione numerica con il predizione- correzzione usando il metodo di eulero e quello dei trapezi iterato più volte
+
+def L(x, v):
+    x_dot = v
+    v_dot = - o0*x
+    return x_dot, v_dot
+
+num_steps = 10000
+dt = xf/num_steps
+
+
+xs8 = np.zeros(num_steps + 1)
+vs8 = np.zeros(num_steps + 1)
+ts8 = np.zeros(num_steps + 1)
+
+xs8[0], vs8[0]=(x0, v0)
+N=30
+
+for i in range(num_steps):
+    xp0, vp0 = L(xs8[i], vs8[i])
+    xp1 = xs8[i] + dt*xp0      #predico
+    vp1 = vs8[i] + dt*vp0
+    ts8[i + 1] = ts8[i] + dt
+    xc0, vc0 = L(xp1, vp1)
+    for j in range(N):
+        xc1 = xs8[i] + (1/2)*dt*(xp0 + xc0)   #correggo N volte
+        vc1 = vs8[i] + (1/2)*dt*(vp0 + vc0)
+        xc0, vc0 = L(xc1, vc1)
+
+    xs8[i + 1] = xs8[i] + (1/2)*dt*(xp0 + xc0)
+    vs8[i + 1] = vs8[i] + (1/2)*dt*(vp0 + vc0)
+
 
 ##Grafico soluzioni
 plt.figure(1)
@@ -223,6 +283,8 @@ plt.plot(ts3, xs3, 'yellow', label='velocity verlet (integratore simplettico)')
 plt.plot(ts4, xs4, 'pink', label='Runge Kutta 4')
 plt.plot(ts5, xs5, 'orange', label='punto medio implicito (integratore simplettico)')
 plt.plot(ts6, xs6, 'fuchsia', label='ruth (integratore simplettico)')
+plt.plot(ts7, xs7, 'violet', label='pred-corr')
+plt.plot(ts8, xs8, 'khaki', label='(pred-corr)^N')
 plt.legend(loc='best')
 plt.grid()
 
@@ -230,111 +292,135 @@ plt.grid()
 plt.figure(2)
 plt.suptitle('Spazio delle fasi', fontsize=20)
 plt.grid()
-plt.subplot(421)
+plt.subplot(521)
 plt.plot(sol[:, 0], sol[:, 1], 'k', label='odeint')
 plt.legend(loc='best')
 plt.grid()
-plt.subplot(422)
+plt.subplot(522)
 plt.plot(xs, vs, 'k', label='Eulero')
 plt.legend(loc='best')
 plt.grid()
-plt.subplot(423)
+plt.subplot(523)
 plt.plot(xs1, vs1, 'k', label='Eulero semi implicito (integratore simplettico)')
 plt.legend(loc='best')
 plt.grid()
-plt.subplot(424)
+plt.subplot(524)
 plt.plot(xs2, vs2, 'k', label='Eulero implicito')
 plt.legend(loc='best')
 plt.grid()
-plt.subplot(425)
+plt.subplot(525)
 plt.plot(xs3, vs3, 'k', label='velocity verlet (integratore simplettico)')
 plt.legend(loc='best')
 plt.grid()
-plt.subplot(426)
+plt.subplot(526)
 plt.plot(xs4, vs4, 'k', label='Runge Kutta 4')
 plt.legend(loc='best')
 plt.grid()
-plt.subplot(427)
+plt.subplot(527)
 plt.plot(xs5, vs5, 'k', label='punto medio implicito (integratore simplettico)')
 plt.legend(loc='best')
 plt.grid()
-plt.subplot(428)
+plt.subplot(528)
 plt.plot(xs6, vs6, 'k', label='ruth (integratore simplettico)')
+plt.legend(loc='best')
+plt.grid()
+plt.subplot(529)
+plt.plot(xs7, vs7, 'k', label='pred-corr')
+plt.legend(loc='best')
+plt.grid()
+plt.subplot(5,2,10)
+plt.plot(xs8, vs8, 'k', label='(pred-corr)^N')
 plt.legend(loc='best')
 plt.grid()
 
 ##Grafico differenze
 plt.figure(3)
-plt.subplot(421)
-plt.title('Differenza tra soluzione esatta e numerica', fontsize=20)
+plt.suptitle('Differenza tra soluzione esatta e numerica', fontsize=20)
+plt.subplot(521)
 plt.plot(t, Sol(t)-sol[:, 0], 'k', label='odeint')
 plt.legend(loc='best')
 plt.grid()
-plt.subplot(422)
+plt.subplot(522)
 plt.plot(t, Sol(t)-xs, 'k', label='Eulero')
 plt.legend(loc='best')
 plt.grid()
-plt.subplot(423)
+plt.subplot(523)
 plt.plot(t, Sol(t)-xs1, 'k', label='Eulero semi implicito (integratore simplettico)')
 plt.legend(loc='best')
 plt.grid()
-plt.subplot(424)
+plt.subplot(524)
 plt.plot(t, Sol(t)-xs2, 'k', label='Eulero implicito')
 plt.legend(loc='best')
 plt.grid()
-plt.subplot(425)
+plt.subplot(525)
 plt.plot(t, Sol(t)-xs3, 'k', label='velocity verlet (integratore simplettico)')
 plt.legend(loc='best')
 plt.grid()
-plt.subplot(426)
+plt.subplot(526)
 plt.plot(t, Sol(t)-xs4, 'k', label='Runge Kutta 4')
 plt.legend(loc='best')
 plt.grid()
-plt.subplot(427)
+plt.subplot(527)
 plt.plot(t, Sol(t)-xs5, 'k', label='punto medio implicito (integratore simplettico)')
 plt.legend(loc='best')
 plt.grid()
-plt.subplot(428)
+plt.subplot(528)
 plt.plot(t, Sol(t)-xs6, 'k', label='ruth (integratore simplettico)')
 plt.legend(loc='best')
 plt.grid()
+plt.subplot(529)
+plt.plot(t, Sol(t)-xs7, 'k', label='pred-corr')
+plt.legend(loc='best')
+plt.grid()
+plt.subplot(5,2,10)
+plt.plot(t, Sol(t)-xs8, 'k', label='(pred-corr)^N')
+plt.legend(loc='best')
+plt.grid()
+
 ##Grafico dell'energia
 def U(v, x):
     return (v**2 +o0*x**2)-(v[0]**2 +o0*x[0]**2)
 
 plt.figure(4)
-plt.subplot(421)
-plt.title('Differenza fra enerigia iniziale', fontsize=20)
+plt.suptitle('Differenza fra enerigia iniziale  ed energia al tempo t del sistema', fontsize=20)
+plt.subplot(521)
 plt.plot(t, U(sol[:, 1], sol[:,0]) , 'k', label='odeint')
 plt.legend(loc='best')
 plt.grid()
-plt.subplot(422)
-plt.title(' ed energia al tempo t del sistema', fontsize=20)
+plt.subplot(522)
 plt.plot(t, U(vs, xs), 'k', label='Eulero')
 plt.legend(loc='best')
 plt.grid()
-plt.subplot(423)
+plt.subplot(523)
 plt.plot(t, U(vs1, xs1), 'k', label='Eulero semi implicito (integratore simplettico)')
 plt.legend(loc='best')
 plt.grid()
-plt.subplot(424)
+plt.subplot(524)
 plt.plot(t, U(vs2, xs2), 'k', label='Eulero implicito')
 plt.legend(loc='best')
 plt.grid()
-plt.subplot(425)
+plt.subplot(525)
 plt.plot(t, U(vs3, xs3), 'k', label='velocity verlet (integratore simplettico)')
 plt.legend(loc='best')
 plt.grid()
-plt.subplot(426)
+plt.subplot(526)
 plt.plot(t, U(vs4, xs4), 'k', label='Runge Kutta 4')
 plt.legend(loc='best')
 plt.grid()
-plt.subplot(427)
+plt.subplot(527)
 plt.plot(t, U(vs5, xs5), 'k', label='punto medio implicito (integratore simplettico)')
 plt.legend(loc='best')
 plt.grid()
-plt.subplot(428)
+plt.subplot(528)
 plt.plot(t, U(vs6, xs6), 'k', label='ruth (integratore simplettico)')
+plt.legend(loc='best')
+plt.grid()
+plt.subplot(529)
+plt.plot(t, U(vs7, xs7), 'k', label='pred-corr')
+plt.legend(loc='best')
+plt.grid()
+plt.subplot(5,2,10)
+plt.plot(t,  U(vs8, xs8), 'k', label='(pred-corr)^N')
 plt.legend(loc='best')
 plt.grid()
 plt.show()
