@@ -141,7 +141,7 @@ for i in range(num_steps):
 ##Soluzione numerica con il metodo del punto medio implicito
 '''
 y'=f(t, y)
-y[i+1]=y[i]+dt*f((t[i+1]+t[i])/2, (y[i+1]+y[i])/2)
+y[i+1]=y[i]+dt*f(t[i]+dt/2, (y[i+1]+y[i])/2)
 nel nostro caso va risolto il sitema
 v[i+1] = v[i] -o0*dt*(x[i+1] + x[i])/2
 x[i+1] = x[i]    +dt*(v[i+1] + v[i])/2
