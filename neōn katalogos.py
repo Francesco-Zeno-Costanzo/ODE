@@ -4,7 +4,7 @@ import  matplotlib.pyplot  as  plt
 o0 = 9
 v0 = 0
 x0 = 1
-xf = 10
+tf = 10
 '''
 x''(t)=-o0*x(t)
 x'(0)=v0
@@ -22,7 +22,7 @@ def osc(y, t):
     return dydt
 
 y0 = [x0 , v0] #x(0), x(0)'
-t = np.linspace(0, xf, 10001)
+t = np.linspace(0, tf, 10001)
 sol = scipy.integrate.odeint(osc, y0, t)
 
 ##Soluzione numerica con il metodo di eluero
@@ -32,7 +32,7 @@ def h(x, v):
     return x_dot, v_dot
 
 num_steps = 10000
-dt = xf/num_steps
+dt = tf/num_steps
 
 
 xs = np.zeros(num_steps + 1)
@@ -56,7 +56,7 @@ def g(x):
     return v_dot
 
 num_steps = 10000
-dt = xf/num_steps
+dt = tf/num_steps
 
 xs1 = np.zeros(num_steps + 1)
 vs1 = np.zeros(num_steps + 1)
@@ -80,7 +80,7 @@ Se il sistema non è risolubile analiticamente si può usare un metodo numerico.
 Un esempio è al metodo del punto medio implicito
 '''
 num_steps = 10000
-dt = xf/num_steps
+dt = tf/num_steps
 
 xs2 = np.zeros(num_steps + 1)
 vs2 = np.zeros(num_steps + 1)
@@ -98,7 +98,7 @@ def F(x): #forza che agisce sul sistema
     return - o0*x
 
 num_steps = 10000
-dt = xf/num_steps
+dt = tf/num_steps
 
 xs3 = np.zeros(num_steps+1)
 vs3 = np.zeros(num_steps+1)
@@ -120,7 +120,7 @@ def r(x, v):
     return x_dot, v_dot
 
 num_steps = 10000
-dt = xf/num_steps
+dt = tf/num_steps
 
 xs4 = np.zeros(num_steps + 1)
 vs4 = np.zeros(num_steps + 1)
@@ -163,7 +163,7 @@ for i in range(num_steps):
 '''
 
 num_steps = 10000
-dt = xf/num_steps
+dt = tf/num_steps
 
 xs5 = np.zeros(num_steps + 1)
 vs5 = np.zeros(num_steps + 1)
@@ -193,7 +193,7 @@ d=np.array([0, 1/(2-l), -l/(2-l), 1/(2-l)])
 '''
 
 num_steps = 10000
-dt = xf/num_steps
+dt = tf/num_steps
 
 xs6 = np.zeros(num_steps+1)
 vs6 = np.zeros(num_steps+1)
@@ -218,7 +218,7 @@ def P(x, v):
     return x_dot, v_dot
 
 num_steps = 10000
-dt = xf/num_steps
+dt = tf/num_steps
 
 
 xs7 = np.zeros(num_steps + 1)
@@ -244,7 +244,7 @@ def L(x, v):
     return x_dot, v_dot
 
 num_steps = 10000
-dt = xf/num_steps
+dt = tf/num_steps
 
 
 xs8 = np.zeros(num_steps + 1)
