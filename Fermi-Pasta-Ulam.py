@@ -52,7 +52,7 @@ for l in range(N):
 def animate(i):
     for k in range(N):
         dot[k].set_data(k, x[i][k])
-    return dot[0], dot[1], dot[2], dot[3], dot[4], dot[5], dot[6], dot[7], dot[8], dot[9], dot[10], dot[11], dot[12]
+    return dot
 
 anim = animation.FuncAnimation(fig, animate, frames=np.arange(0, num_steps+1, 10) ,interval=1, blit=True, repeat=True)
 
