@@ -77,10 +77,3 @@ def animate(i):
 anim = animation.FuncAnimation(fig, animate, frames=num_steps, interval=0.1, blit=True, repeat=True)
 #anim.save('Lorenz Attractor.mp4', fps=300, extra_args=['-vcodec', 'libx264'])
 plt.show()
-##
-plt.figure(3)
-R=np.sqrt(x**2 + y**2 + z**2)
-R1=np.sqrt(x1**2 + y1**2 + z1**2)
-d=R-R1
-plt.plot(t, np.log(abs(d)))
-plt.show()
