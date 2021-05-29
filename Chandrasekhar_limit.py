@@ -95,7 +95,7 @@ print('ovvero un numero di interazioni pari a: %d' %iter)
 #calcoliamo il necessario per ottenere la massa limite
 x0=x[int(d)]
 H=psi3[int(d)]*x0**2
-MCH=-H*(np.sqrt(6)/(8*np.pi))*(((h*c)/G)**(3/2))*(1/(mp*mi))**2 #per il radice di 6 ci si fida di moroni
+MCH=-H*(np.sqrt(6)/(8*np.pi))*(((h*c)/G)**(3/2))*(1/(mp*mi))**2
 
 print('zero della soluzione: %f' %x0)
 print("x^2*phi'calcolato in x0: %f" %H)
