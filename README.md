@@ -1,7 +1,7 @@
 # ODE
 These codes are examples of solving ordinary differential equations using the finite difference method, the method of runge kutta of order 4, scipy's "odeint" function and some examples of symplectic integrator.
 There is also an animation for the particle in the electromagnetic and gravitational field, for the Lorenz attractor, for Fermi-Pasta-Ulam problem and for the tunnel effect through a barrier.
-The "neōn katalogos" file (as the name might suggest) is a list containing several examples of implicit, explicit and symplectic ode-solving algorithms; all of them, for simplicity are applied to the harmonic oscillator. Some of them are also in the file ode.c
+The "neōn_katalogos" file (as the name might suggest) is a list containing several examples of implicit, explicit and symplectic ode-solving algorithms; all of them, for simplicity are applied to the harmonic oscillator. Some of them are also in the file ode.c
 
 We briefly present the various methods used, each of these, unless otherwise specified, is contained as an example in the file neōn katalogos: 
 The former are Euler's methods, classical, implicit and semi-implicit (the latter symplectic)
@@ -15,10 +15,14 @@ The former are Euler's methods, classical, implicit and semi-implicit (the latte
 
 
 it is easy to verify the advantage of the latter method compared to the previous two as it is associated with a canonical transformation.
-Another first order method and symplectic integrator is the midpoint method that we present in its implicit formulation:
+Another first order method and symplectic integrator is the midpoint method that we present in its implicit and explicit formulation:
+implicit:
 
 <a href="https://www.codecogs.com/eqnedit.php?latex=y_{k&plus;1}=y_k&plus;dtf\Biggl(t_{k}&plus;\frac{dt}{2},\frac{1}{2}(y_k&space;&plus;&space;y_{k&plus;1})\Biggr)\\" target="_blank"><img src="https://latex.codecogs.com/gif.latex?y_{k&plus;1}=y_k&plus;dtf\Biggl(t_{k}&plus;\frac{dt}{2},\frac{1}{2}(y_k&space;&plus;&space;y_{k&plus;1})\Biggr)\\" title="y_{k+1}=y_k+dtf\Biggl(t_{k}+\frac{dt}{2},\frac{1}{2}(y_k + y_{k+1})\Biggr)\\" /></a>
 
+explicit:
+
+<a href="https://www.codecogs.com/eqnedit.php?latex=y_{k&plus;1}=y_k&plus;dtf\Biggl(t_{k}&plus;\frac{dt}{2},&space;y_k&space;&plus;&space;\frac{dt}{2}f(t_k,&space;y_k)\Biggr)\\" target="_blank"><img src="https://latex.codecogs.com/gif.latex?y_{k&plus;1}=y_k&plus;dtf\Biggl(t_{k}&plus;\frac{dt}{2},&space;y_k&space;&plus;&space;\frac{dt}{2}f(t_k,&space;y_k)\Biggr)\\" title="y_{k+1}=y_k+dtf\Biggl(t_{k}+\frac{dt}{2}, y_k + \frac{dt}{2}f(t_k, y_k)\Biggr)\\" /></a>
 
 Another algorithm is verlet velocity integration, a symplectic method:
 
