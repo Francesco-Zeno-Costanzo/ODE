@@ -158,8 +158,8 @@ Il seguente è un esempio per x''=-sin(o0*x):
 import scipy.optimize as so
 def F(V, x0, v0):
     v1, x1= V
-    R1=v1-v0-dt*(-o0*np.sin((x1+x0)/2))
-    R2=x1-x0-dt*(v1+v0)/2
+    R1=v1-v0+dt*(-o0*np.sin((x1+x0)/2))
+    R2=x1-x0+dt*(v1+v0)/2
     return [R1, R2]
 
 for i in range(num_steps):
