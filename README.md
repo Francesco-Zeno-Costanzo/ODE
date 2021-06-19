@@ -1,6 +1,6 @@
 # ODE
-These codes are examples of solving ordinary differential equations using the finite difference method, the method of runge kutta of order 4, scipy's "odeint" function and some examples of symplectic integrator.
-There is also an animation for the particle in the electromagnetic and gravitational field, for the Lorenz attractor, for Fermi-Pasta-Ulam problem and for the tunnel effect through a barrier.
+These codes are examples of solving ordinary differential equations using the finite difference method, the method of runge kutta of order 4, scipy's "odeint" function and other methods.
+Some codes also feature an animation of the solution.
 The "neōn_katalogos" file (as the name might suggest) is a list containing several examples of implicit, explicit and symplectic ode-solving algorithms; all of them, for simplicity are applied to the harmonic oscillator. Some of them are also in the file ode.c
 
 We briefly present the various methods used, each of these, unless otherwise specified, is contained as an example in the file neōn katalogos: 
