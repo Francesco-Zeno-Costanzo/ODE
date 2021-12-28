@@ -21,7 +21,26 @@ def f(x, v):
     v_dot = (3/2)*x**2
     return x_dot, v_dot
 
-def Rk4(xf, N, x0, s):
+def Rk4(N, x0, s, xf):
+    '''
+    Compute solution using runge_kutta4 method.
+
+    Parameters
+    ----------
+    N : Integer
+        number of integration steps.
+    x0 : float
+        initial condition on position.
+    s : float
+        initial condition on speed.
+    xf : float
+        final time of integration.
+
+    Returns
+    -------
+    xs : one dimensional array
+        solution of the equation
+    '''
     dt = xf/N
     xs = np.zeros(N + 1)
     vs = np.zeros(N + 1)
@@ -35,7 +54,30 @@ def Rk4(xf, N, x0, s):
         vs[i + 1] = vs[i] + (dt/6)*(vk1 + 2*vk2 + 2*vk3 + vk4)
     return xs
 
-def F(xf, N, x0, start, step, x1, n):
+def F(N, x0, start, xf, step, x1, n):
+    '''
+    Compute the function to find the zeros to have only an idea of ​​where to look
+    Parameters
+    ----------
+    N : Integer
+        number of integration steps.
+    x0 : float
+        initial condition on position.
+    start : float
+        initial condition on speed.
+    xf : float
+        final time of integration.
+    step : float
+        start increment
+    x1 : float
+        boundary condition of solution
+    n : int
+        number of function values ​​to calculate
+    Returns
+    -------
+    xs : one dimensional array
+        solution of the equation
+    '''
     P=np.zeros(n)
     a=start
     t=np.linspace(start, start+n*step, n)
@@ -55,7 +97,32 @@ plt.plot(t, 0*t, color='red', linestyle='--')
 plt.plot(t, y)
 plt.show()
 ##
-def SH(xf, N, x0, start, step, x1, tau):
+def SH(N, x0, start, xf, step, x1, tau):
+    '''
+    Function that calculates zeros with the bisection method
+    Parameters
+    ----------
+    N : Integer
+        number of integration steps.
+    x0 : float
+        initial condition on position.
+    start : float
+        initial condition on speed.
+    xf : float
+        final time of integration.
+    step : float
+        start increment
+    x1 : float
+        boundary condition of solution
+    tau : float
+        tollerance on find value
+    Returns
+    -------
+    m : float
+        ideal intial condition for speed
+    sol : one dimensional array
+        solution of the equation
+    '''
     a=start
     sol=Rk4(xf, N, x0, a)
     k=sol[-1]-x1
