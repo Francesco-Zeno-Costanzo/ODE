@@ -278,7 +278,7 @@ for i in range(num_steps):
     xs8[i + 1] = xs8[i] + (1/2)*dt*(xp0 + xc0)
     vs8[i + 1] = vs8[i] + (1/2)*dt*(vp0 + vc0)
 
-##Soluzione numerica con il metodo del punto medio implicito (integratore simplettico)
+##Soluzione numerica con il metodo del punto medio esplicito (integratore simplettico)
 
 def K(x, v):
     x_dot = v
