@@ -1,7 +1,6 @@
 import numpy as np
 import scipy.optimize as so
 import matplotlib.pyplot as plt
-from matplotlib import animation
 
 N = 15
 M = 15
