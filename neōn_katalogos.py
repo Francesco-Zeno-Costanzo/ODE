@@ -153,19 +153,20 @@ nel nostro caso va risolto il sitema
 v[i+1] = v[i] -o0*dt*(x[i+1] + x[i])/2
 x[i+1] = x[i]    +dt*(v[i+1] + v[i])/2
 Se in sistema non è risolubile analiticamente possiamo procedere numericamente.
-Il seguente è un esempio per x''=-sin(o0*x):
+Il seguente è un esempio per x''=-o0sin(x):
 
 import scipy.optimize as so
 def F(V, x0, v0):
-    v1, x1= V
-    R1=v1-v0+dt*(-o0*np.sin((x1+x0)/2))
-    R2=x1-x0+dt*(v1+v0)/2
+    v1, x1 = V
+    R1 = v1 - v0 - dt*(-o0*np.sin((x1+x0)/2))
+    R2 = x1 - x0 - dt*(v1+v0)/2
     return [R1, R2]
 
 for i in range(num_steps):
     xstart=(ys[i], xs[i])
     ys[i + 1], xs[i + 1] = so.fsolve(F , xstart, args=(xs[i], ys[i]))
     ts[i + 1] = ts[i] + dt
+
 #dove xstart dipende da i per velocizzare, su grandi tempi, il calcolo
 '''
 
