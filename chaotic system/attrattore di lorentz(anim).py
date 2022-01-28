@@ -9,10 +9,11 @@ def L(x, y, z, s=10, r=28, b=8/3):
     z_dot = x*y - b*z
     return x_dot, y_dot, z_dot
 
-dt = 0.01
+dt = 0.005
 num_steps = 10000
 
 t=np.linspace(0, num_steps*dt, num_steps+1)
+
 def int(x0, y0, z0):
     xs = np.zeros(num_steps + 1)
     ys = np.zeros(num_steps + 1)
@@ -36,16 +37,23 @@ x, y, z = int(0., 1.0, 1.05)
 x1, y1, z1 = int(0., 1., 1.06)
 
 
-fig1 = plt.figure(1)
-ax1 = fig1.gca(projection='3d')
-
-ax1.plot(x, y, z, lw=0.7)
-ax1.plot(x1, y1, z1, lw=0.7)
-ax1.set_xlabel("X Axis")
-ax1.set_ylabel("Y Axis")
-ax1.set_zlabel("Z Axis")
-ax1.set_title("Lorenz Attractor")
-
+plt.figure(1)
+plt.suptitle('singole traiettorie')
+plt.subplot(311)
+plt.ylabel('x(t)')
+plt.xlabel('t')
+plt.plot(t, x)
+plt.grid()
+plt.subplot(312)
+plt.ylabel('y(t)')
+plt.xlabel('t')
+plt.plot(t, y)
+plt.grid()
+plt.subplot(313)
+plt.ylabel('z(t)')
+plt.xlabel('t')
+plt.plot(t, z)
+plt.grid()
 
 fig = plt.figure(2)
 ax = fig.gca(projection='3d')
@@ -74,6 +82,18 @@ def animate(i):
     line1.set_data_3d(x1[:i],y1[:i], z1[:i])
     return  dot, line, dot1, line1
 
-anim = animation.FuncAnimation(fig, animate, frames=num_steps, interval=0.1, blit=True, repeat=True)
+anim = animation.FuncAnimation(fig, animate, frames=range(0, num_steps, 2), interval=1, blit=True, repeat=True)
 #anim.save('Lorenz Attractor.mp4', fps=300, extra_args=['-vcodec', 'libx264'])
+plt.show()
+##
+
+R0 = np.sqrt(x**2 + y**2 + z**2)
+R1 = np.sqrt(x1**2 + y1**2 + z1**2)
+dist = R0 - R1
+
+plt.figure(3)
+plt.title('Differenza fra due soluzioni')
+plt.yscale('log')
+plt.plot(t, abs(dist))
+plt.grid()
 plt.show()
