@@ -3,10 +3,10 @@ import numpy as np
 import scipy.special as ssp
 from scipy.sparse import diags
 import  matplotlib.pyplot  as  plt
-import matplotlib.animation as animation
+
 start_time=time.time()
 
-n=4000
+n=2000
 xr=15
 xl=-15
 L=xr-xl
@@ -53,30 +53,5 @@ plt.show()
 c=(time.time() - start_time-b-a)
 print("--- %s seconds ---" % c)
 
-##
-start_time1=time.time()
-fig1, ax1 = plt.subplots()
-ax1.set_xlim(np.min(xp),np.max(xp))
-ax1.set_ylim(np.min(psi[:,m]+avals[m])-1/2, np.max(psi[:,m]+avals[m])+1/2)
-plt.title("$\psi(x)$ Barriera n=%d" %m, fontsize=20)
-plt.ylabel('$\psi(x)$', fontsize=15)
-plt.xlabel('x', fontsize=15)
-plt.grid()
-
-y=psi[:,m]
-
-line, = plt.plot([], [], 'b-',  label='$\psi(x)$ numerica')
-def animate(i):
-    line.set_data(xp[:i],y[:i]++avals[m])
-    return line,
-
-plt.plot(x,f(x), color='red', label='V(x)=$Ae^{-(x / \sigma)^2}$')
-plt.plot(x,np.ones(len(x))*avals[m], color='black', linestyle='--', label='$E_{%d}=%f$' %(m, avals[m]))
-
-plt.legend(loc='best')
-anim = animation.FuncAnimation(fig1, animate, frames=range(0, n), interval=1, blit=True, repeat=True)
-#anim.save('tunnel barriera.mp4', fps=300, extra_args=['-vcodec', 'libx264'])
-
-print("--- %s seconds ---" % (time.time() - start_time1))
 
 plt.show()
