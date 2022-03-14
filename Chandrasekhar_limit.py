@@ -21,7 +21,7 @@ def LE(phi, psi, x, n):
 
 #integratore
 def RK4(n):
-    num_steps = 2000000
+    num_steps = 80000
     dx = 8/num_steps
 
     phi = np.zeros(num_steps + 1)
@@ -57,9 +57,9 @@ def f5(x):
 #risolviamo le equazioni anche nei casi analitici per vedere se l'integratore si comporta bene
 start_time=time.time()
 
-phi0, psi0, w = RK4(0)
-phi1, psi1, w = RK4(1)
-phi5, psi5, w = RK4(5)
+phi0, psi0, _ = RK4(0)
+phi1, psi1, _ = RK4(1)
+phi5, psi5, _ = RK4(5)
 phi3, psi3, x = RK4(3)
 
 A=(time.time() - start_time)
