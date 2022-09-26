@@ -153,20 +153,19 @@ nel nostro caso va risolto il sitema
 v[i+1] = v[i] -o0*dt*(x[i+1] + x[i])/2
 x[i+1] = x[i]    +dt*(v[i+1] + v[i])/2
 Se in sistema non è risolubile analiticamente possiamo procedere numericamente.
-Il seguente è un esempio per x''=-o0sin(x):
+Il seguente è un esempio per x''=-sin(o0*x):
 
 import scipy.optimize as so
 def F(V, x0, v0):
-    v1, x1 = V
-    R1 = v1 - v0 - dt*(-o0*np.sin((x1+x0)/2))
-    R2 = x1 - x0 - dt*(v1+v0)/2
+    v1, x1= V
+    R1=v1-v0-dt*(-o0*np.sin((x1+x0)/2))
+    R2=x1-x0-dt*(v1+v0)/2
     return [R1, R2]
 
 for i in range(num_steps):
     xstart=(ys[i], xs[i])
     ys[i + 1], xs[i + 1] = so.fsolve(F , xstart, args=(xs[i], ys[i]))
     ts[i + 1] = ts[i] + dt
-
 #dove xstart dipende da i per velocizzare, su grandi tempi, il calcolo
 '''
 
@@ -247,7 +246,7 @@ for i in range(num_steps):
     xs7[i + 1] = xs7[i] + (1/2)*dt*(x00 + xc)   #correggo
     vs7[i + 1] = vs7[i] + (1/2)*dt*(v00 + vc)
 
-##Soluzione numerica con il predizione- correzzione usando il metodo di eulero e quello dei trapezi iterato più volte
+##Soluzione numerica con predittore correttore di ordine 4 Adamas-Bashforth-Moulton
 
 def L(x, v):
     x_dot = v
@@ -263,21 +262,52 @@ vs8 = np.zeros(num_steps + 1)
 ts8 = np.zeros(num_steps + 1)
 
 xs8[0], vs8[0]=(x0, v0)
-N=30
-
-for i in range(num_steps):
-    xp0, vp0 = L(xs8[i], vs8[i])
-    xp1 = xs8[i] + dt*xp0      #predico
-    vp1 = vs8[i] + dt*vp0
+for i in range(3):
+    xk1, vk1 = L(xs8[i], vs8[i])
+    xk2, vk2 = L(xs8[i] + xk1*dt/2, vs8[i]+ vk1*dt/2)
+    xk3, vk3 = L(xs8[i] + xk2*dt/2, vs8[i]+ vk2*dt/2)
+    xk4, vk4 = L(xs8[i] + xk3*dt, vs8[i]+ vk3*dt)
+    xs8[i + 1] = xs8[i] + (dt/6)*(xk1 + 2*xk2 + 2*xk3 + xk4)
+    vs8[i + 1] = vs8[i] + (dt/6)*(vk1 + 2*vk2 + 2*vk3 + vk4)
     ts8[i + 1] = ts8[i] + dt
-    xc0, vc0 = L(xp1, vp1)
-    for j in range(N):
-        xc1 = xs8[i] + (1/2)*dt*(xp0 + xc0)   #correggo N volte
-        vc1 = vs8[i] + (1/2)*dt*(vp0 + vc0)
-        xc0, vc0 = L(xc1, vc1)
 
-    xs8[i + 1] = xs8[i] + (1/2)*dt*(xp0 + xc0)
-    vs8[i + 1] = vs8[i] + (1/2)*dt*(vp0 + vc0)
+"""
+for i in range(3,num_steps):
+    #predico
+    AB0x, AB0v = L(xs8[i], vs8[i])
+    AB1x, AB1v = L(xs8[i-1], vs8[i-1])
+    AB2x, AB2v = L(xs8[i-2], vs8[i-2])
+    AB3x, AB3v = L(xs8[i-3], vs8[i-3])
+    vs8[i+1] = vs8[i] + dt/24*(55*AB0v - 59*AB1v + 37*AB2v - 9*AB3v)
+    xs8[i+1] = xs8[i] + dt/24*(55*AB0x - 59*AB1x + 37*AB2x - 9*AB3x)
+    #correggo
+    ABx, ABv = L(xs8[i+1], vs8[i+1])
+    vs8[i+1] = vs8[i] + dt/24*(9*ABv + 19*AB0v -5*AB1v  + AB2v)
+    xs8[i+1] = xs8[i] + dt/24*(9*ABx + 19*AB0x -5*AB1x  + AB2x)
+
+    ts8[i + 1] = ts8[i] + dt
+"""
+i = 3
+AB0x, AB0v = L(xs8[i], vs8[i])
+AB1x, AB1v = L(xs8[i-1], vs8[i-1])
+AB2x, AB2v = L(xs8[i-2], vs8[i-2])
+AB3x, AB3v = L(xs8[i-3], vs8[i-3])
+V = np.array([AB0v, AB1v, AB2v, AB3v])
+X = np.array([AB0x, AB1x, AB2x, AB3x])
+
+for i in range(3,num_steps):
+    #predico
+
+    vs8[i+1] = vs8[i] + dt/24*(55*V[0] - 59*V[1] + 37*V[2] - 9*V[3])
+    xs8[i+1] = xs8[i] + dt/24*(55*X[0] - 59*X[1] + 37*X[2] - 9*X[3])
+    #correggo
+    ABx, ABv = L(xs8[i+1], vs8[i+1])
+    V=np.insert(V, 0, ABv);V=np.delete(V, -1)
+    X=np.insert(X, 0, ABx);X=np.delete(X, -1)
+    vs8[i+1] = vs8[i] + dt/24*(9*V[0] + 19*V[1] -5*V[2] + V[3])
+    xs8[i+1] = xs8[i] + dt/24*(9*X[0] + 19*X[1] -5*X[2] + X[3])
+
+    ts8[i + 1] = ts8[i] + dt
 
 ##Soluzione numerica con il metodo del punto medio esplicito (integratore simplettico)
 
@@ -319,7 +349,7 @@ plt.plot(ts4, xs4, 'pink', label='Runge Kutta 4')
 plt.plot(ts5, xs5, 'orange', label='punto medio implicito (integratore simplettico)')
 plt.plot(ts6, xs6, 'fuchsia', label='ruth (integratore simplettico)')
 plt.plot(ts7, xs7, 'violet', label='pred-corr')
-plt.plot(ts8, xs8, 'khaki', label='(pred-corr)^N')
+plt.plot(ts8, xs8, 'khaki', label='PCAMB4')
 plt.plot(ts9, xs9, 'navy', label='punto medio esplicito (integratore simplettico)')
 plt.legend(loc='best')
 plt.grid()
@@ -333,46 +363,46 @@ plt.plot(t, Sol(t)-sol[:, 0], 'k', label='odeint')
 plt.legend(loc='best')
 plt.grid()
 plt.subplot(612)
-plt.plot(t, Sol(t)-xs, 'k', label='Eulero')
+plt.plot(ts, Sol(ts)-xs, 'k', label='Eulero')
 plt.legend(loc='best')
 plt.grid()
 plt.subplot(613)
-plt.plot(t, Sol(t)-xs1, 'k', label='Eulero semi implicito (integratore simplettico)')
+plt.plot(ts1, Sol(ts1)-xs1, 'k', label='Eulero semi implicito (integratore simplettico)')
 plt.legend(loc='best')
 plt.grid()
 plt.subplot(614)
-plt.plot(t, Sol(t)-xs2, 'k', label='Eulero implicito')
+plt.plot(ts2, Sol(ts2)-xs2, 'k', label='Eulero implicito')
 plt.legend(loc='best')
 plt.grid()
 plt.subplot(615)
-plt.plot(t, Sol(t)-xs3, 'k', label='velocity verlet (integratore simplettico)')
+plt.plot(ts3, Sol(ts3)-xs3, 'k', label='velocity verlet (integratore simplettico)')
 plt.legend(loc='best')
 plt.grid()
 plt.subplot(616)
-plt.plot(t, Sol(t)-xs4, 'k', label='Runge Kutta 4')
+plt.plot(ts4, Sol(ts4)-xs4, 'k', label='Runge Kutta 4')
 plt.legend(loc='best')
 plt.grid()
 
 plt.figure(4)
 plt.suptitle('Differenza tra soluzione esatta e numerica', fontsize=20)
 plt.subplot(511)
-plt.plot(t, Sol(t)-xs5, 'k', label='punto medio implicito (integratore simplettico)')
+plt.plot(ts5, Sol(ts5)-xs5, 'k', label='punto medio implicito (integratore simplettico)')
 plt.legend(loc='best')
 plt.grid()
 plt.subplot(512)
-plt.plot(t, Sol(t)-xs6, 'k', label='ruth (integratore simplettico)')
+plt.plot(ts6, Sol(ts6)-xs6, 'k', label='ruth (integratore simplettico)')
 plt.legend(loc='best')
 plt.grid()
 plt.subplot(513)
-plt.plot(t, Sol(t)-xs7, 'k', label='pred-corr')
+plt.plot(ts7, Sol(ts7)-xs7, 'k', label='pred-corr')
 plt.legend(loc='best')
 plt.grid()
 plt.subplot(514)
-plt.plot(t, Sol(t)-xs8, 'k', label='(pred-corr)^N')
+plt.plot(ts8, Sol(ts8)-xs8, 'k', label='PCAMB4')
 plt.legend(loc='best')
 plt.grid()
 plt.subplot(515)
-plt.plot(t, Sol(t)-xs9, 'k', label='punto medio esplicito (integratore simplettico)')
+plt.plot(ts9, Sol(ts9)-xs9, 'k', label='punto medio esplicito (integratore simplettico)')
 plt.legend(loc='best')
 plt.grid()
 
@@ -387,46 +417,46 @@ plt.plot(t, U(sol[:, 1], sol[:,0]) , 'k', label='odeint')
 plt.legend(loc='best')
 plt.grid()
 plt.subplot(612)
-plt.plot(t, U(vs, xs), 'k', label='Eulero')
+plt.plot(ts, U(vs, xs), 'k', label='Eulero')
 plt.legend(loc='best')
 plt.grid()
 plt.subplot(613)
-plt.plot(t, U(vs1, xs1), 'k', label='Eulero semi implicito (integratore simplettico)')
+plt.plot(ts1, U(vs1, xs1), 'k', label='Eulero semi implicito (integratore simplettico)')
 plt.legend(loc='best')
 plt.grid()
 plt.subplot(614)
-plt.plot(t, U(vs2, xs2), 'k', label='Eulero implicito')
+plt.plot(ts2, U(vs2, xs2), 'k', label='Eulero implicito')
 plt.legend(loc='best')
 plt.grid()
 plt.subplot(615)
-plt.plot(t, U(vs3, xs3), 'k', label='velocity verlet (integratore simplettico)')
+plt.plot(ts3, U(vs3, xs3), 'k', label='velocity verlet (integratore simplettico)')
 plt.legend(loc='best')
 plt.grid()
 plt.subplot(616)
-plt.plot(t, U(vs4, xs4), 'k', label='Runge Kutta 4')
+plt.plot(ts4, U(vs4, xs4), 'k', label='Runge Kutta 4')
 plt.legend(loc='best')
 plt.grid()
 
 plt.figure(6)
 plt.suptitle('Differenza fra enerigia iniziale  ed energia al tempo t del sistema', fontsize=20)
 plt.subplot(511)
-plt.plot(t, U(vs5, xs5), 'k', label='punto medio implicito (integratore simplettico)')
+plt.plot(ts5, U(vs5, xs5), 'k', label='punto medio implicito (integratore simplettico)')
 plt.legend(loc='best')
 plt.grid()
 plt.subplot(512)
-plt.plot(t, U(vs6, xs6), 'k', label='ruth (integratore simplettico)')
+plt.plot(ts6, U(vs6, xs6), 'k', label='ruth (integratore simplettico)')
 plt.legend(loc='best')
 plt.grid()
 plt.subplot(513)
-plt.plot(t, U(vs7, xs7), 'k', label='pred-corr')
+plt.plot(ts7, U(vs7, xs7), 'k', label='pred-corr')
 plt.legend(loc='best')
 plt.grid()
 plt.subplot(514)
-plt.plot(t,  U(vs8, xs8), 'k', label='(pred-corr)^N')
+plt.plot(ts8,  U(vs8, xs8), 'k', label='PCAMB4')
 plt.legend(loc='best')
 plt.grid()
 plt.subplot(515)
-plt.plot(t,  U(vs9, xs9), 'k', label='punto medio esplicito (integratore simplettico)')
+plt.plot(ts9,  U(vs9, xs9), 'k', label='punto medio esplicito (integratore simplettico)')
 plt.legend(loc='best')
 plt.grid()
 plt.show()
