@@ -1,462 +1,761 @@
+"""
+As the name might suggest this code is a list containing
+several examples of implicit, explicit and symplectic
+ode-solving algorithms, all of them, for simplicity are
+applied to the harmonic oscillator
+"""
+
 import numpy as np
 import scipy.integrate
+import scipy.optimize as so
 import  matplotlib.pyplot  as  plt
-o0 = 9
-v0 = 0
-x0 = 1
-tf = 10
-'''
-x''(t)=-o0*x(t)
-x'(0)=v0
-x(0)=x0
-'''
 
-##Soluzione analitica
 
-def Sol(t):
+## Soluzione analitica
+
+
+def Sol(t, o0, x0, v0):
+    """Analitic solutions
+    """
     return v0/np.sqrt(o0) * np.sin(np.sqrt(o0)*t) + x0*np.cos(np.sqrt(o0)*t)
 
-##Soluzione numerica di odeint
 
-def osc(y, t):
-    theta, omega = y
-    dydt = [omega,  - o0*theta]
-    return dydt
-
-y0 = [x0 , v0] #x(0), x(0)'
-t = np.linspace(0, tf, 10001)
-sol = scipy.integrate.odeint(osc, y0, t)
-
-##Soluzione numerica con il metodo di eluero
-
-def h(x, v):
-    x_dot = v
-    v_dot = - o0*x
-    return x_dot, v_dot
-
-num_steps = 10000
-dt = tf/num_steps
+##Equazioni da risolvere
 
 
-xs = np.zeros(num_steps + 1)
-vs = np.zeros(num_steps + 1)
-ts = np.zeros(num_steps + 1)
+def osc(t, Y, o0):
+    """
+    equation to solve
 
-xs[0], vs[0]=(x0, v0)
+    Parameters
+    ----------
+    t : float
+        time
+    Y : 1darray
+        array of variables
+    o0 : float
+        model's parameters
 
-for i in range(num_steps):
-    x1, v1 = h(xs[i], vs[i])
-    xs[i + 1] = xs[i] + dt*x1
-    vs[i + 1] = vs[i] + dt*v1
-    ts[i + 1] = ts[i] + dt
+    Return
+    ------
+    Y_dot : 1darray
+        array of equations
+    """
+    theta, omega = Y
 
-##Soluzione numerica con il metodo di eluero semi implicito (integratore simplettico)
+    theta_dot = omega
+    omega_dot = -o0 * theta
 
-def f(v):
-    x_dot = v
-    return x_dot
-def g(x):
-    v_dot = - o0*x
-    return v_dot
+    Y_dot = np.array([theta_dot, omega_dot])
 
-num_steps = 10000
-dt = tf/num_steps
-
-xs1 = np.zeros(num_steps + 1)
-vs1 = np.zeros(num_steps + 1)
-ts1 = np.zeros(num_steps + 1)
-
-xs1[0], vs1[0]=(x0, v0)
-
-for i in range(num_steps):
-    vs1[i + 1] = vs1[i] + dt*g(xs1[i])
-    xs1[i + 1] = xs1[i] + dt*f(vs1[i+1])
-    ts1[i + 1] = ts1[i] + dt
-
-##Soluzione numerica con il metodo di eluero implicito
-'''
-y'=f(t, y)
-y[i+1]=y[i]+dt*f(t[i+1], y[i+1])
-nel nostro caso va risolto il sitema
-v[i+1] = v[i] -o0*dt*x[i+1]
-x[i+1] = x[i]    +dt*v[i+1]
-Se il sistema non è risolubile analiticamente si può usare un metodo numerico.
-Un esempio è al metodo del punto medio implicito
-'''
-num_steps = 10000
-dt = tf/num_steps
-
-xs2 = np.zeros(num_steps + 1)
-vs2 = np.zeros(num_steps + 1)
-ts2 = np.zeros(num_steps + 1)
-
-xs2[0], vs2[0]=(x0, v0)
-
-for i in range(num_steps):
-    vs2[i + 1] = (vs2[i] -o0*dt*xs2[i])/(1+o0*dt**2)
-    xs2[i + 1] = xs2[i] + dt*vs2[i+1]
-    ts2[i + 1] = ts2[i] + dt
-
-##Soluzione numerica con il metodo velocity verlet (integratore simplettico)
-
-def F(x): #forza che agisce sul sistema
-    return - o0*x
-
-num_steps = 10000
-dt = tf/num_steps
-
-xs3 = np.zeros(num_steps+1)
-vs3 = np.zeros(num_steps+1)
-ts3 = np.zeros(num_steps+1)
-
-xs3[0], vs3[0] = (x0, v0)
-
-for i in range(num_steps):
-    Fx = F(xs3[i])
-    xs3[i + 1] = xs3[i] + vs3[i]*dt + Fx*((dt**2)/2)
-    F1x= F(xs3[i+1])
-    vs3[i + 1] = vs3[i] + (Fx+F1x)*dt/2
-    ts3[i + 1] = ts3[i] + dt
-
-##Soluzione numerica con il metodo runge-kutta di ordine 4
-
-def r(x, v):
-    x_dot = v
-    v_dot = - o0*x
-    return x_dot, v_dot
-
-num_steps = 10000
-dt = tf/num_steps
-
-xs4 = np.zeros(num_steps + 1)
-vs4 = np.zeros(num_steps + 1)
-ts4 = np.zeros(num_steps + 1)
-
-xs4[0], vs4[0]=(x0, v0)
+    return Y_dot
 
 
-for i in range(num_steps):
-    xk1, vk1 = r(xs4[i], vs4[i])
-    xk2, vk2 = r(xs4[i] + xk1*dt/2, vs4[i]+ vk1*dt/2)
-    xk3, vk3 = r(xs4[i] + xk2*dt/2, vs4[i]+ vk2*dt/2)
-    xk4, vk4 = r(xs4[i] + xk3*dt, vs4[i]+ vk3*dt)
-    xs4[i + 1] = xs4[i] + (dt/6)*(xk1 + 2*xk2 + 2*xk3 + xk4)
-    vs4[i + 1] = vs4[i] + (dt/6)*(vk1 + 2*vk2 + 2*vk3 + vk4)
-    ts4[i + 1] = ts4[i] + dt
+## Per alcuni integratori quanto sopra va scritto così
+
+
+def F(Y, o0):
+    """
+    Accelerazione del sistema
+
+    Parameters
+    ----------
+    Y : 1darray
+        array of variables
+    o0 : float
+        model's parameters
+
+    Return
+    ------
+    Y_ddot : 1darray
+        array of force, or acceleration
+    """
+    x, = Y
+    x_ddot = -o0*x
+    Y_ddot = np.array([x_ddot])
+
+    return Y_ddot
+
+
+## Per altri ancora così
+
+
+
+def sist(V, dt, x0, v0, o0):
+    """
+    Funzione per il metodo del punto medio implicito
+    Ad ogni passo di integrazione va risolto il sistema
+
+    Parameters
+    ----------
+    V : 1darray
+        array of variables
+    dt : float
+        integration step
+    x0, v0: float
+        solution at time t
+    o0 : float
+        model's parameters
+
+    Return
+    ------
+    list
+    equations whose solution is
+    the solution at time t + dt
+    """
+    x1, v1 = V
+
+    R1 = v1 - v0 - dt*(-o0*(x1 + x0)/2)
+    R2 = x1 - x0 - dt*(v1 + v0)/2
+
+    return [R1, R2]
+
+
+## Metodo di eluero
+
+def eulero(num_steps, tf, f, init, args=()):
+    """
+    Integrator with eulwer method
+
+    Parameters
+    ----------
+    num_steps : int
+        number of point of solution
+    tf : float
+        upper bound of integration
+    f : callable
+        function to integrate, must accept vectorial input
+    init : 1darray
+        array of initial condition
+    args : tuple, optional
+        extra arguments to pass to f
+
+    Return
+    ------
+    X : array, shape (num_steps + 1, len(init))
+        solution of equation
+    t : 1darray
+        time
+    """
+    #time steps
+    dt = tf/num_steps
+
+    X = np.zeros((num_steps + 1, len(init))) #matrice delle soluzioni
+    t = np.zeros(num_steps + 1)              #array dei tempi
+
+    X[0, :] = init                           #condizioni iniziali
+
+
+    for i in range(num_steps):
+        df = f(t[i], X[i, :], *args)
+        X[i + 1, :] = X[i, :] + dt*df
+        t[i + 1] = t[i] + dt
+
+    return X, t
+
+
+## Metodo di eluero semi implicito (integratore simplettico)
+
+
+def eulero_semi_impl(num_steps, tf, f, init, args=()):
+    """
+    Integrator with semi implicit eluer
+
+    Parameters
+    ----------
+    num_steps : int
+        number of point of solution
+    tf : float
+        upper bound of integration
+    f : callable
+        function to integrate, must accept vectorial input
+    init : 1darray
+        array of initial condition
+    args : tuple, optional
+        extra arguments to pass to f
+
+    Return
+    ------
+    X : array, shape (num_steps + 1, len(init))
+        solution of equation
+    t : 1darray
+        time
+    """
+    #time steps
+    dt = tf/num_steps
+
+    X = np.zeros((num_steps + 1, len(init))) #matrice delle soluzioni
+    t = np.zeros(num_steps + 1)              #array dei tempi
+
+    X[0, :] = init                           #condizioni iniziali
+
+
+    for i in range(num_steps):
+        df = f(t[i], X[i, :], *args)
+        X[i + 1, 1::2] = X[i, 1::2] + dt*df[1::2]
+
+        df = f(t[i], X[i+1, :], *args)
+        X[i + 1, ::2] = X[i, ::2] + dt*df[::2]
+
+        t[i + 1] = t[i] + dt
+
+    return X, t
+
+
+## Metodo velocity verlet (integratore simplettico)
+
+
+def vel_ver(num_steps, tf, f, init, args=()):
+    """
+    Integrator with velocity-verlet order method
+
+    Parameters
+    ----------
+    num_steps : int
+        number of point of solution
+    tf : float
+        upper bound of integration
+    f : callable
+        acceleration on the system
+    init : 1darray
+        array of initial condition
+    args : tuple, optional
+        extra arguments to pass to f
+
+    Return
+    ------
+    X : array, shape (num_steps + 1, len(init))
+        solution of equation
+    t : 1darray
+        time
+    """
+    #time steps
+    dt = tf/num_steps
+    X = np.zeros((num_steps + 1, len(init))) #matrice delle soluzioni
+    t = np.zeros(num_steps + 1)              #array dei tempi
+
+    X[0, :] = init                           #condizioni iniziali
+
+    for i in range(num_steps):  #ciclo sui tempi
+
+        acc1 = f(X[i, ::2], *args)
+        X[i + 1, ::2] = X[i, ::2] + dt*X[i, 1::2] + 0.5*acc1*dt**2
+        acc2 = f(X[i+1, ::2], *args)
+        X[i + 1, 1::2] = X[i, 1::2] + 0.5*(acc1+acc2)*dt
+
+        t[i + 1] = t[i] + dt
+
+    return X, t
+
+
+## Metodo runge-kutta di ordine 4
+
+
+def RK4(num_steps, tf, f, init, args=()):
+    """
+    Integrator With Ruge-Kutta 4th order method
+
+    Parameters
+    ----------
+    num_steps : int
+        number of point of solution
+    tf : float
+        upper bound of integration
+    f : callable
+        function to integrate, must accept vectorial input
+    init : 1darray
+        array of initial condition
+    args : tuple, optional
+        extra arguments to pass to f
+
+    Return
+    ------
+    X : array, shape (num_steps + 1, len(init))
+        solution of equation
+    t : 1darray
+        time
+    """
+    #time steps
+    dt = tf/num_steps
+
+    X = np.zeros((num_steps + 1, len(init))) #matrice delle soluzioni
+    t = np.zeros(num_steps + 1)              #array dei tempi
+
+    X[0, :] = init                           #condizioni iniziali
+
+    #primi passi con runge kutta
+    for i in range(num_steps):
+        xk1 = f(t[i], X[i, :], *args)
+        xk2 = f(t[i] + dt/2, X[i, :] + xk1*dt/2, *args)
+        xk3 = f(t[i] + dt/2, X[i, :] + xk2*dt/2, *args)
+        xk4 = f(t[i] + dt, X[i, :] + xk3*dt, *args)
+        X[i + 1, :] = X[i, :] + (dt/6)*(xk1 + 2*xk2 + 2*xk3 + xk4)
+        t[i + 1] = t[i] + dt
+
+    return X, t
 
 
 ##Soluzione numerica con il metodo del punto medio implicito (integratore simplettico)
-'''
-y'=f(t, y)
-y[i+1]=y[i]+dt*f(t[i] + dt/2, (y[i+1]+y[i])/2)
-nel nostro caso va risolto il sitema
-v[i+1] = v[i] -o0*dt*(x[i+1] + x[i])/2
-x[i+1] = x[i]    +dt*(v[i+1] + v[i])/2
-Se in sistema non è risolubile analiticamente possiamo procedere numericamente.
-Il seguente è un esempio per x''=-sin(o0*x):
-
-import scipy.optimize as so
-def F(V, x0, v0):
-    v1, x1= V
-    R1=v1-v0-dt*(-o0*np.sin((x1+x0)/2))
-    R2=x1-x0-dt*(v1+v0)/2
-    return [R1, R2]
-
-for i in range(num_steps):
-    xstart=(ys[i], xs[i])
-    ys[i + 1], xs[i + 1] = so.fsolve(F , xstart, args=(xs[i], ys[i]))
-    ts[i + 1] = ts[i] + dt
-#dove xstart dipende da i per velocizzare, su grandi tempi, il calcolo
-'''
-
-num_steps = 10000
-dt = tf/num_steps
-
-xs5 = np.zeros(num_steps + 1)
-vs5 = np.zeros(num_steps + 1)
-ts5 = np.zeros(num_steps + 1)
-
-xs5[0], vs5[0]=(x0, v0)
-
-for i in range(num_steps):
-    vs5[i + 1] = (vs5[i] -o0*dt*xs5[i] - o0*(dt**2)*vs5[i]/4)/(1+(o0*dt**2)/4)
-    xs5[i + 1] = xs5[i] + dt*vs5[i]/2 + dt*vs5[i+1]/2
-    ts5[i + 1] = ts5[i] + dt
-
-##Soluzione numerica con il metodo ruth3-4 (integratore simplettico)
-
-def G(x):
-    return - o0*x
-
-#coefficienti ruth 3
-c = np.array([2/3, -2/3, 1])
-d = np.array([7/24, 3/4, -1/24])
-
-'''
-#coefficienti ruth 4
-l=2**(1/3)
-c=np.array([1/(2*(2-l)), (1-l)/(2*(2-l)), (1-l)/(2*(2-l)), 1/(2*(2-l))])
-d=np.array([0, 1/(2-l), -l/(2-l), 1/(2-l)])
-'''
-
-num_steps = 10000
-dt = tf/num_steps
-
-xs6 = np.zeros(num_steps+1)
-vs6 = np.zeros(num_steps+1)
-ts6 = np.zeros(num_steps+1)
-
-xs6[0], vs6[0] = (x0, v0)
-
-for i in range(num_steps):
-    x, v = xs6[i], vs6[i]
-    for k in range(len(d)):
-        v+=d[k]*G(x)*dt
-        x+=c[k]*v*dt
-    xs6[i + 1] = x
-    vs6[i + 1] = v
-    ts6[i + 1] = ts6[i] + dt
-
-##Soluzione numerica con il predizione- correzzione usando il metodo di eulero e quello dei trapezi
-'''
-In questi metodi il primo metodo è esplicito mente il secondo è implicito
-non vi è quindi bisogno di risolvere un'equazione algebrica
-'''
-def P(x, v):
-    x_dot = v
-    v_dot = - o0*x
-    return x_dot, v_dot
-
-num_steps = 10000
-dt = tf/num_steps
 
 
-xs7 = np.zeros(num_steps + 1)
-vs7 = np.zeros(num_steps + 1)
-ts7 = np.zeros(num_steps + 1)
+def implicit_mid_point(num_steps, tf, f, init, args=()):
+    """
+    Integrator with implicit mid point method
+    We must solve a syestem of equation so do
+    it with scipy.optimize
 
-xs7[0], vs7[0]=(x0, v0)
+    Parameters
+    ----------
+    num_steps : int
+        number of point of solution
+    tf : float
+        upper bound of integration
+    f : callable
+        function to integrate, or better system to solve
+    init : 1darray
+        array of initial condition
+    args : tuple, optional
+        extra arguments to pass to f
 
-for i in range(num_steps):
-    x00, v00 = P(xs7[i], vs7[i])
-    xp = xs7[i] + dt*x00       #predico
-    vp = vs7[i] + dt*v00
-    ts7[i + 1] = ts7[i] + dt
-    xc, vc = P(xp, vp)
-    xs7[i + 1] = xs7[i] + (1/2)*dt*(x00 + xc)   #correggo
-    vs7[i + 1] = vs7[i] + (1/2)*dt*(v00 + vc)
+    Return
+    ------
+    X : array, shape (num_steps + 1, len(init))
+        solution of equation
+    t : 1darray
+        time
+    """
+    #time steps
+    dt = tf/num_steps
 
-##Soluzione numerica con predittore correttore di ordine 4 Adamas-Bashforth-Moulton
+    X = np.zeros((num_steps + 1, len(init))) #matrice delle soluzioni
+    t = np.zeros(num_steps + 1)              #array dei tempi
 
-def L(x, v):
-    x_dot = v
-    v_dot = - o0*x
-    return x_dot, v_dot
+    X[0, :] = init                           #condizioni iniziali
 
-num_steps = 10000
-dt = tf/num_steps
-
-
-xs8 = np.zeros(num_steps + 1)
-vs8 = np.zeros(num_steps + 1)
-ts8 = np.zeros(num_steps + 1)
-
-xs8[0], vs8[0]=(x0, v0)
-for i in range(3):
-    xk1, vk1 = L(xs8[i], vs8[i])
-    xk2, vk2 = L(xs8[i] + xk1*dt/2, vs8[i]+ vk1*dt/2)
-    xk3, vk3 = L(xs8[i] + xk2*dt/2, vs8[i]+ vk2*dt/2)
-    xk4, vk4 = L(xs8[i] + xk3*dt, vs8[i]+ vk3*dt)
-    xs8[i + 1] = xs8[i] + (dt/6)*(xk1 + 2*xk2 + 2*xk3 + xk4)
-    vs8[i + 1] = vs8[i] + (dt/6)*(vk1 + 2*vk2 + 2*vk3 + vk4)
-    ts8[i + 1] = ts8[i] + dt
-
-"""
-for i in range(3,num_steps):
-    #predico
-    AB0x, AB0v = L(xs8[i], vs8[i])
-    AB1x, AB1v = L(xs8[i-1], vs8[i-1])
-    AB2x, AB2v = L(xs8[i-2], vs8[i-2])
-    AB3x, AB3v = L(xs8[i-3], vs8[i-3])
-    vs8[i+1] = vs8[i] + dt/24*(55*AB0v - 59*AB1v + 37*AB2v - 9*AB3v)
-    xs8[i+1] = xs8[i] + dt/24*(55*AB0x - 59*AB1x + 37*AB2x - 9*AB3x)
-    #correggo
-    ABx, ABv = L(xs8[i+1], vs8[i+1])
-    vs8[i+1] = vs8[i] + dt/24*(9*ABv + 19*AB0v -5*AB1v  + AB2v)
-    xs8[i+1] = xs8[i] + dt/24*(9*ABx + 19*AB0x -5*AB1x  + AB2x)
-
-    ts8[i + 1] = ts8[i] + dt
-"""
-i = 3
-AB0x, AB0v = L(xs8[i], vs8[i])
-AB1x, AB1v = L(xs8[i-1], vs8[i-1])
-AB2x, AB2v = L(xs8[i-2], vs8[i-2])
-AB3x, AB3v = L(xs8[i-3], vs8[i-3])
-V = np.array([AB0v, AB1v, AB2v, AB3v])
-X = np.array([AB0x, AB1x, AB2x, AB3x])
-
-for i in range(3,num_steps):
-    #predico
-
-    vs8[i+1] = vs8[i] + dt/24*(55*V[0] - 59*V[1] + 37*V[2] - 9*V[3])
-    xs8[i+1] = xs8[i] + dt/24*(55*X[0] - 59*X[1] + 37*X[2] - 9*X[3])
-    #correggo
-    ABx, ABv = L(xs8[i+1], vs8[i+1])
-    V=np.insert(V, 0, ABv);V=np.delete(V, -1)
-    X=np.insert(X, 0, ABx);X=np.delete(X, -1)
-    vs8[i+1] = vs8[i] + dt/24*(9*V[0] + 19*V[1] -5*V[2] + V[3])
-    xs8[i+1] = xs8[i] + dt/24*(9*X[0] + 19*X[1] -5*X[2] + X[3])
-
-    ts8[i + 1] = ts8[i] + dt
-
-##Soluzione numerica con il metodo del punto medio esplicito (integratore simplettico)
-
-def K(x, v):
-    x_dot = v
-    v_dot = - o0*x
-    return x_dot, v_dot
-
-num_steps = 10000
-dt = tf/num_steps
+    for i in range(num_steps):
+        xstart = X[i, :]
+        X[i + 1, :] = so.fsolve(f, xstart, args=(dt, *X[i, :], *args))
+        t[i + 1] = t[i] + dt
+    return X, t
 
 
-xs9 = np.zeros(num_steps + 1)
-vs9 = np.zeros(num_steps + 1)
-ts9 = np.zeros(num_steps + 1)
-
-xs9[0], vs9[0]=(x0, v0)
+## Metodo Yoshida 4-ordine (integratore simplettico)
 
 
-for i in range(num_steps):
-    k0, h0 = K(xs9[i], vs9[i])
-    k1, h1 = K(xs9[i] + k0*dt/2, vs9[i] + h0*dt/2)
-    vs9[i + 1] = vs9[i] + dt*h1
-    xs9[i + 1] = xs9[i] + dt*k1
-    ts9[i + 1] = ts9[i] + dt
 
-##Grafico soluzioni
-plt.figure(1)
-plt.title('Confronto soluzioni', fontsize=20)
-plt.xlabel('t', fontsize=15)
-plt.ylabel(r'$\vartheta(t)$', fontsize=15)
-plt.plot(t, Sol(t), 'black', label='sol analitica')
-plt.plot(t, sol[:, 0], 'blue', label='odeint')
-plt.plot(ts, xs, 'red', label='Eulero')
-plt.plot(ts1, xs1, 'green', label='Eulero semi implicito (integratore simplettico)')
-plt.plot(ts2, xs2, 'brown', label='Eulero implicito I')
-plt.plot(ts3, xs3, 'yellow', label='velocity verlet (integratore simplettico)')
-plt.plot(ts4, xs4, 'pink', label='Runge Kutta 4')
-plt.plot(ts5, xs5, 'orange', label='punto medio implicito (integratore simplettico)')
-plt.plot(ts6, xs6, 'fuchsia', label='ruth (integratore simplettico)')
-plt.plot(ts7, xs7, 'violet', label='pred-corr')
-plt.plot(ts8, xs8, 'khaki', label='PCAMB4')
-plt.plot(ts9, xs9, 'navy', label='punto medio esplicito (integratore simplettico)')
-plt.legend(loc='best')
-plt.grid()
+def Yoshida4(num_steps, tf, f, init, args=()):
+    """
+    Integrator with Yoshida method
+
+    Parameters
+    ----------
+    num_steps : int
+        number of point of solution
+    tf : float
+        upper bound of integration
+    f : callable
+        function to integrate, must accept vectorial input
+    init : 1darray
+        array of initial condition
+    args : tuple, optional
+        extra arguments to pass to f
+
+    Return
+    ------
+    X : array, shape (num_steps + 1, len(init))
+        solution of equation
+    t : 1darray
+        time
+    """
+    #some funny coefficents
+    l = 2**(1/3)
+    w0 = -l/(2-l)
+    w1 = 1/(2-l)
+    #other funny coefficents
+    c1 = c4 = w1/2
+    c2 = c3 = (w0 + w1)/2
+    d1 = d3 = w1
+    d2 = w0
+    #time steps
+    dt = tf/num_steps
+    X = np.zeros((num_steps + 1, len(init))) #matrice delle soluzioni
+    t = np.zeros(num_steps + 1)              #array dei tempi
+
+    X[0, :] = init                           #condizioni iniziali
+
+    for i in range(num_steps):               #ciclo sui tempi
+        x0 = X[i, ::2]
+        v0 = X[i,1::2]
+
+        x1 = x0 + c1*v0*dt
+        v1 = v0 + d1*f(x1, *args)*dt
+
+        x2 = x1 + c2*v1*dt
+        v2 = v1 + d2*f(x2, *args)*dt
+
+        x3 = x2 + c3*v2*dt
+        v3 = v2 + d3*f(x3, *args)*dt
+
+        X[i + 1, ::2] = x3 + c4*v3*dt
+        X[i + 1,1::2] = v3
+        t[i + 1] = t[i] + dt
+
+    return X, t
 
 
-##Grafico differenze
-plt.figure(3)
-plt.suptitle('Differenza tra soluzione esatta e numerica', fontsize=20)
-plt.subplot(611)
-plt.plot(t, Sol(t)-sol[:, 0], 'k', label='odeint')
-plt.legend(loc='best')
-plt.grid()
-plt.subplot(612)
-plt.plot(ts, Sol(ts)-xs, 'k', label='Eulero')
-plt.legend(loc='best')
-plt.grid()
-plt.subplot(613)
-plt.plot(ts1, Sol(ts1)-xs1, 'k', label='Eulero semi implicito (integratore simplettico)')
-plt.legend(loc='best')
-plt.grid()
-plt.subplot(614)
-plt.plot(ts2, Sol(ts2)-xs2, 'k', label='Eulero implicito')
-plt.legend(loc='best')
-plt.grid()
-plt.subplot(615)
-plt.plot(ts3, Sol(ts3)-xs3, 'k', label='velocity verlet (integratore simplettico)')
-plt.legend(loc='best')
-plt.grid()
-plt.subplot(616)
-plt.plot(ts4, Sol(ts4)-xs4, 'k', label='Runge Kutta 4')
-plt.legend(loc='best')
-plt.grid()
+## Predizione- correzzione usando il metodo di eulero e quello dei trapezi
 
-plt.figure(4)
-plt.suptitle('Differenza tra soluzione esatta e numerica', fontsize=20)
-plt.subplot(511)
-plt.plot(ts5, Sol(ts5)-xs5, 'k', label='punto medio implicito (integratore simplettico)')
-plt.legend(loc='best')
-plt.grid()
-plt.subplot(512)
-plt.plot(ts6, Sol(ts6)-xs6, 'k', label='ruth (integratore simplettico)')
-plt.legend(loc='best')
-plt.grid()
-plt.subplot(513)
-plt.plot(ts7, Sol(ts7)-xs7, 'k', label='pred-corr')
-plt.legend(loc='best')
-plt.grid()
-plt.subplot(514)
-plt.plot(ts8, Sol(ts8)-xs8, 'k', label='PCAMB4')
-plt.legend(loc='best')
-plt.grid()
-plt.subplot(515)
-plt.plot(ts9, Sol(ts9)-xs9, 'k', label='punto medio esplicito (integratore simplettico)')
-plt.legend(loc='best')
-plt.grid()
 
-##Grafico dell'energia
-def U(v, x):
-    return (v**2 +o0*x**2)-(v[0]**2 +o0*x[0]**2)
+def PC(num_steps, tf, f, init, args=()):
+    """
+    Integrator with predictor-corrector method
+    euler and trapezoidal rule
 
-plt.figure(5)
-plt.suptitle('Differenza fra enerigia iniziale  ed energia al tempo t del sistema', fontsize=20)
-plt.subplot(611)
-plt.plot(t, U(sol[:, 1], sol[:,0]) , 'k', label='odeint')
-plt.legend(loc='best')
-plt.grid()
-plt.subplot(612)
-plt.plot(ts, U(vs, xs), 'k', label='Eulero')
-plt.legend(loc='best')
-plt.grid()
-plt.subplot(613)
-plt.plot(ts1, U(vs1, xs1), 'k', label='Eulero semi implicito (integratore simplettico)')
-plt.legend(loc='best')
-plt.grid()
-plt.subplot(614)
-plt.plot(ts2, U(vs2, xs2), 'k', label='Eulero implicito')
-plt.legend(loc='best')
-plt.grid()
-plt.subplot(615)
-plt.plot(ts3, U(vs3, xs3), 'k', label='velocity verlet (integratore simplettico)')
-plt.legend(loc='best')
-plt.grid()
-plt.subplot(616)
-plt.plot(ts4, U(vs4, xs4), 'k', label='Runge Kutta 4')
-plt.legend(loc='best')
-plt.grid()
+    Parameters
+    ----------
+    num_steps : int
+        number of point of solution
+    tf : float
+        upper bound of integration
+    f : callable
+        function to integrate, must accept vectorial input
+    init : 1darray
+        array of initial condition
+    args : tuple, optional
+        extra arguments to pass to f
 
-plt.figure(6)
-plt.suptitle('Differenza fra enerigia iniziale  ed energia al tempo t del sistema', fontsize=20)
-plt.subplot(511)
-plt.plot(ts5, U(vs5, xs5), 'k', label='punto medio implicito (integratore simplettico)')
-plt.legend(loc='best')
-plt.grid()
-plt.subplot(512)
-plt.plot(ts6, U(vs6, xs6), 'k', label='ruth (integratore simplettico)')
-plt.legend(loc='best')
-plt.grid()
-plt.subplot(513)
-plt.plot(ts7, U(vs7, xs7), 'k', label='pred-corr')
-plt.legend(loc='best')
-plt.grid()
-plt.subplot(514)
-plt.plot(ts8,  U(vs8, xs8), 'k', label='PCAMB4')
-plt.legend(loc='best')
-plt.grid()
-plt.subplot(515)
-plt.plot(ts9,  U(vs9, xs9), 'k', label='punto medio esplicito (integratore simplettico)')
-plt.legend(loc='best')
-plt.grid()
-plt.show()
+    Return
+    ------
+    X : array, shape (num_steps + 1, len(init))
+        solution of equation
+    t : 1darray
+        time
+    """
+    #time steps
+    dt = tf/num_steps
+
+    X = np.zeros((num_steps + 1, len(init))) #matrice delle soluzioni
+    t = np.zeros(num_steps + 1)              #array dei tempi
+
+    X[0, :] = init                           #condizioni iniziali
+
+    for i in range(num_steps):
+        #predico
+        df1 = f(t[i], X[i, :], *args)
+        X[i + 1, :] = X[i, :] + dt*df1
+        t[i + 1] = t[i] + dt
+        #corrggo
+        df2 = f(t[i+1], X[i+1, :], *args)
+        X[i + 1, :] = X[i, :] + 0.5*dt*(df1 + df2)
+
+    return X, t
+
+
+## Predittore correttore di ordine 4 Adamas-Bashforth-Moulton
+
+
+def AMB4(num_steps, tf, f, init, args=()):
+    """
+    Integrator with Adams-Bashforth-Moulton
+    predictor and corretor of order 4
+
+    Parameters
+    ----------
+    num_steps : int
+        number of point of solution
+    tf : float
+        upper bound of integration
+    f : callable
+        function to integrate, must accept vectorial input
+    init : 1darray
+        array of initial condition
+    args : tuple, optional
+        extra arguments to pass to f
+
+    Return
+    ------
+    X : array, shape (num_steps + 1, len(init))
+        solution of equation
+    t : 1darray
+        time
+    """
+    #time steps
+    dt = tf/num_steps
+
+    X = np.zeros((num_steps + 1, len(init))) #matrice delle soluzioni
+    t = np.zeros(num_steps + 1)              #array dei tempi
+
+    X[0, :] = init                           #condizioni iniziali
+
+    #primi passi con runge kutta
+    for i in range(3):
+        xk1 = f(t[i], X[i, :], *args)
+        xk2 = f(t[i] + dt/2, X[i, :] + xk1*dt/2, *args)
+        xk3 = f(t[i] + dt/2, X[i, :] + xk2*dt/2, *args)
+        xk4 = f(t[i] + dt, X[i, :] + xk3*dt, *args)
+        X[i + 1, :] = X[i, :] + (dt/6)*(xk1 + 2*xk2 + 2*xk3 + xk4)
+        t[i + 1] = t[i] + dt
+
+    # Adams-Bashforth-Moulton
+    i = 3
+    AB0 = f(t[i  ], X[i,   :], *args)
+    AB1 = f(t[i-1], X[i-1, :], *args)
+    AB2 = f(t[i-2], X[i-2, :], *args)
+    AB3 = f(t[i-3], X[i-3, :], *args)
+
+    for i in range(3,num_steps):
+        #predico
+        X[i + 1, :] = X[i, :] + dt/24*(55*AB0 - 59*AB1 + 37*AB2 - 9*AB3)
+        t[i + 1] = t[i] + dt
+        #correggo
+        AB3 = AB2
+        AB2 = AB1
+        AB1 = AB0
+        AB0 = f(t[i+1], X[i + 1, :], *args)
+
+        X[i + 1, :] = X[i, :] + dt/24*(9*AB0 + 19*AB1 - 5*AB2 + AB3)
+
+    return X, t
+
+
+## Metodo del punto medio esplicito (integratore simplettico)
+
+
+def mid_point(num_steps, tf, f, init, args=()):
+    """
+    Integrator with mid_point rule
+
+    Parameters
+    ----------
+    num_steps : int
+        number of point of solution
+    tf : float
+        upper bound of integration
+    f : callable
+        function to integrate, must accept vectorial input
+    init : 1darray
+        array of initial condition
+    args : tuple, optional
+        extra arguments to pass to f
+
+    Return
+    ------
+    X : array, shape (num_steps + 1, len(init))
+        solution of equation
+    t : 1darray
+        time
+    """
+    #time steps
+    dt = tf/num_steps
+
+    X = np.zeros((num_steps + 1, len(init))) #matrice delle soluzioni
+    t = np.zeros(num_steps + 1)              #array dei tempi
+
+    X[0, :] = init                           #condizioni iniziali
+
+    for i in range(num_steps):
+        xk1 = f(t[i], X[i, :], *args)
+        xk2 = f(t[i], X[i, :] + xk1*dt/2, *args)
+        X[i + 1, :] = X[i, :] + dt*xk2
+        t[i + 1] = t[i] + dt
+
+    return X, t
+
+
+## Risoluzione
+if __name__ == '__main__':
+
+    #parametri simulazione
+    o0 = 9
+    #condizione iniziali
+    v0 = 0
+    x0 = 1
+    init = np.array([x0 , v0]) #x(0), x(0)'
+    #estremo di integrazione
+    tf = 10
+    #numero di punti
+    num_steps =  10000
+
+    #odeint
+    ts0 = np.linspace(0, tf, num_steps + 1)
+    sol = scipy.integrate.odeint(osc, init, ts0, args=(o0,), tfirst=True)
+    xs0, vs0 = sol.T
+    #eulero
+    sol, ts1 = eulero(num_steps, tf, osc, init, args=(o0,))
+    xs1, vs1 = sol.T
+    #eulero semi implicito
+    sol, ts2 = eulero_semi_impl(num_steps, tf, osc, init, args=(o0,))
+    xs2, vs2 = sol.T
+    #velocity verlet
+    sol, ts3 = vel_ver(num_steps, tf, F, init, args=(o0,))
+    xs3, vs3 = sol.T
+    #runge kutta 4
+    sol, ts4 = RK4(num_steps, tf, osc, init, args=(o0,))
+    xs4, vs4 = sol.T
+    #punto medio implicito
+    sol, ts5 = implicit_mid_point(num_steps, tf, sist, init, args=(o0,))
+    xs5, vs5 = sol.T
+    #Yoshida
+    sol, ts6 = Yoshida4(num_steps, tf, F, init, args=(o0,))
+    xs6, vs6 = sol.T
+    #Pedittore, correttore
+    sol, ts7 = PC(num_steps, tf, osc, init, args=(o0,))
+    xs7, vs7 = sol.T
+    #Pedittore, correttore quarto ordine Adamas-Bashforth-Moulton
+    sol, ts8 = AMB4(num_steps, tf, osc, init, args=(o0,))
+    xs8, vs8 = sol.T
+    #punto medio esplicito
+    #Pedittore, correttore quarto ordine Adamas-Bashforth-Moulton
+    sol, ts9 = mid_point(num_steps, tf, osc, init, args=(o0,))
+    xs9, vs9 = sol.T
+
+
+    ##Grafico soluzioni
+
+
+    plt.figure(1)
+    plt.title('Confronto soluzioni', fontsize=20)
+    plt.xlabel('t', fontsize=15)
+    plt.ylabel(r'$\vartheta(t)$', fontsize=15)
+    plt.plot(ts0, Sol(ts0, o0, *init), 'black', label='sol analitica')
+    plt.plot(ts0, xs0, 'blue', label='odeint')
+    plt.plot(ts1, xs1, 'red', label='Eulero')
+    plt.plot(ts2, xs2, 'green', label='Eulero semi implicito (integratore simplettico)')
+    plt.plot(ts3, xs3, 'yellow', label='velocity verlet (integratore simplettico)')
+    plt.plot(ts4, xs4, 'pink', label='Runge Kutta 4')
+    plt.plot(ts5, xs5, 'orange', label='punto medio implicito (integratore simplettico)')
+    plt.plot(ts6, xs6, 'fuchsia', label='Yoshida 4')
+    plt.plot(ts7, xs7, 'violet', label='pred-corr')
+    plt.plot(ts8, xs8, 'khaki', label='PCAMB4')
+    plt.plot(ts9, xs9, 'navy', label='punto medio esplicito (integratore simplettico)')
+    plt.legend(loc='best')
+    plt.grid()
+
+
+    ##Grafico differenze
+
+
+    plt.figure(3)
+    plt.suptitle('Differenza tra soluzione esatta e numerica', fontsize=20)
+
+    plt.subplot(511)
+    plt.plot(ts0, Sol(ts0, o0, *init)-xs0, 'k', label='odeint')
+    plt.legend(loc='best')
+    plt.grid()
+
+    plt.subplot(512)
+    plt.plot(ts1, Sol(ts1, o0, *init)-xs1, 'k', label='Eulero')
+    plt.legend(loc='best')
+    plt.grid()
+
+    plt.subplot(513)
+    plt.plot(ts2, Sol(ts2, o0, *init)-xs2, 'k', label='Eulero semi implicito (integratore simplettico)')
+    plt.legend(loc='best')
+    plt.grid()
+
+    plt.subplot(514)
+    plt.plot(ts3, Sol(ts3, o0, *init)-xs3, 'k', label='velocity verlet (integratore simplettico)')
+    plt.legend(loc='best')
+    plt.grid()
+
+    plt.subplot(515)
+    plt.plot(ts4, Sol(ts4, o0, *init)-xs4, 'k', label='Runge Kutta 4')
+    plt.legend(loc='best')
+    plt.grid()
+
+
+    plt.figure(4)
+    plt.suptitle('Differenza tra soluzione esatta e numerica', fontsize=20)
+
+    plt.subplot(511)
+    plt.plot(ts5, Sol(ts5, o0, *init)-xs5, 'k', label='punto medio implicito (integratore simplettico)')
+    plt.legend(loc='best')
+    plt.grid()
+
+    plt.subplot(512)
+    plt.plot(ts6, Sol(ts6, o0, *init)-xs6, 'k', label='Yoshida 4(integratore simplettico)')
+    plt.legend(loc='best')
+    plt.grid()
+
+    plt.subplot(513)
+    plt.plot(ts7, Sol(ts7, o0, *init)-xs7, 'k', label='pred-corr')
+    plt.legend(loc='best')
+    plt.grid()
+
+    plt.subplot(514)
+    plt.plot(ts8, Sol(ts8, o0, *init)-xs8, 'k', label='PCAMB4')
+    plt.legend(loc='best')
+    plt.grid()
+
+    plt.subplot(515)
+    plt.plot(ts9, Sol(ts9, o0, *init)-xs9, 'k', label='punto medio esplicito (integratore simplettico)')
+    plt.legend(loc='best')
+    plt.grid()
+
+
+    ##Grafico dell'energia
+
+
+    def U(v, x):
+        return (v**2 + o0*x**2)-(v[0]**2 + o0*x[0]**2)
+
+
+    plt.figure(5)
+    plt.suptitle('Differenza fra enerigia iniziale  ed energia al tempo t del sistema', fontsize=20)
+
+    plt.subplot(511)
+    plt.plot(ts0, U(vs0, xs0) , 'k', label='odeint')
+    plt.legend(loc='best')
+    plt.grid()
+
+    plt.subplot(512)
+    plt.plot(ts1, U(vs1, xs1), 'k', label='Eulero')
+    plt.legend(loc='best')
+    plt.grid()
+
+    plt.subplot(513)
+    plt.plot(ts2, U(vs2, xs2), 'k', label='Eulero semi implicito (integratore simplettico)')
+    plt.legend(loc='best')
+    plt.grid()
+
+    plt.subplot(514)
+    plt.plot(ts3, U(vs3, xs3), 'k', label='velocity verlet (integratore simplettico)')
+    plt.legend(loc='best')
+    plt.grid()
+
+    plt.subplot(515)
+    plt.plot(ts4, U(vs4, xs4), 'k', label='Runge Kutta 4')
+    plt.legend(loc='best')
+    plt.grid()
+
+
+    plt.figure(6)
+    plt.suptitle('Differenza fra enerigia iniziale  ed energia al tempo t del sistema', fontsize=20)
+
+    plt.subplot(511)
+    plt.plot(ts5, U(vs5, xs5), 'k', label='punto medio implicito (integratore simplettico)')
+    plt.legend(loc='best')
+    plt.grid()
+
+    plt.subplot(512)
+    plt.plot(ts6, U(vs6, xs6), 'k', label='Yoshida 4 (integratore simplettico)')
+    plt.legend(loc='best')
+    plt.grid()
+
+    plt.subplot(513)
+    plt.plot(ts7, U(vs7, xs7), 'k', label='pred-corr')
+    plt.legend(loc='best')
+    plt.grid()
+
+    plt.subplot(514)
+    plt.plot(ts8,  U(vs8, xs8), 'k', label='PCAMB4')
+    plt.legend(loc='best')
+    plt.grid()
+
+    plt.subplot(515)
+    plt.plot(ts9,  U(vs9, xs9), 'k', label='punto medio esplicito (integratore simplettico)')
+    plt.legend(loc='best')
+    plt.grid()
+
+
+    plt.show()
