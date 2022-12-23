@@ -131,32 +131,251 @@ def RKF45(num_steps, tf, f, init, tau, args=()):
 
     return X, t, h
 
-## Cash-Karp Runga-Kutta Method
+## Cash-Karp-Runga-Kutta Method from Numerical recipes
 
+
+def solve(t0, tf, h_t, init, tau, derivs, args=()):
+    """
+    Integrator Cash-Karp-Runga-Kutta Method
+
+    Parameters
+    ----------
+    t0 : float
+        lower bound of integration
+    tf : float
+        upper bound of integration
+    h_t : float
+        guess for integration steps
+    init : 1darray
+        array of initial condition
+    tau : float
+        required accuracy
+    derivs : callable
+        function to integrate, must accept vectorial input
+    args : tuple, optional
+        extra arguments to pass to derivs
+
+    Return
+    ------
+    Y : array, shape (iter, len(init))
+        solution of equation
+    t : 1darray
+        time
+    h : 1darray
+        array of steps
+    """
+
+    #Useful function
+
+    #Adaptive stepsize
+    def rkqs(y, dydx, x, htry, eps, yscal, derivs, args=()):
+        """
+        function to controll Adaptive stepsize
+
+        Parameters
+        ----------
+        y : 1darray
+            solution at point x
+        dydx : 1darray
+            array for RHS of equation
+        x : float
+            actual point
+        htry : float
+            guess for integration steps
+        eps : float
+            required accuracy
+        yscal : 1darray
+            array to controll the accuracy
+        derivs : callable
+            function to integrate, must accept vectorial input
+        args : tuple, optional
+            extra arguments to pass to derivs
+
+        Return
+        ------
+        x : float
+            new point fo solution
+        y : 1darray
+            solution at point x
+        hdid : float
+            value of step used
+        hnext : float
+            prediction of next stepsize
+        """
+
+        # numeri importanti
+        SAFETY  = 0.9
+        PGROW   = -0.2
+        PSHRINK = -0.25
+        ERRCON  = 1.89e-4 #(5/SAFETY)**(1/PGROW)
+
+        h = htry
+
+        while True:
+            ytemp, yerr = rkck(y, dydx, x, h, derivs, args)
+            errarr = [yerr[i]/yscal[i] for i in range(len(yerr))]
+            errmax = np.max(errarr)
+            errmax /= eps
+            if errmax <= 1.0: #Step was succesful, time for next step!
+                break
+
+            htemp = SAFETY*h*pow(errmax, PSHRINK)#reducing step size, try again
+            if h >= 0.0:
+                h = max(htemp, 0.1*h)
+            else:
+                h = min(htemp, 0.1*h)
+
+            xnew = x+h
+            if xnew == x:
+                print("Stepsize underflow in rkqs")
+
+        if errmax > ERRCON:
+            hnext = SAFETY*h*pow(errmax, PGROW)
+        else:
+            hnext = 5.0*h
+
+        hdid = h
+        x += hdid
+        y = ytemp
+
+        return x, y, hdid, hnext
+
+
+    #Cash-Karp Runge-Kutta step
+    def rkck(y, dydx, x, h, derivs, args=()):
+        """
+        function for integration of quation
+
+        Parameters
+        ----------
+        y : 1darray
+            solution at point x
+        dydx : 1darray
+            array for RHS of equation
+        x : float
+            actual point
+        h : float
+            integration step
+        derivs : callable
+            function to integrate, must accept vectorial input
+        args : tuple, optional
+            extra arguments to pass to derivs
+
+        Return
+        ------
+        yout : 1darray
+            solution
+        yerr : 1darray
+            error
+        """
+
+        #tantissimi numeri
+        #per il passo temporale
+        a2 = 0.2 ; a3 = 0.3 ; a4 = 0.6 ; a5 = 1.0 ; a6 = 0.875
+
+        #per le chiamate successive
+        b21 = 0.2           ; b31 = 3.0/40.0         ; b32 = 9.0/40.0
+        b41 = 0.3           ; b42 = -0.9             ; b43 = 1.2
+        b51 = -11.0/54.0    ; b52 = 2.5              ; b53 = -70.0/27.0
+        b54 = 35.0/27.0     ; b61 = 1631.0/55296.0   ; b62 = 175.0/512.0
+        b63 = 575.0/13824.0 ; b64 = 44275.0/110592.0 ; b65 = 253.0/4096.0
+
+        #per aggiornamento soluzione
+        c1 = 37.0/378.0  ; c3 = 250.0/621.0
+        c4 = 125.0/594.0 ; c6 = 512.0/1771.0
+
+        #per calcolo dell'errore
+        dc5 = -277.00/14336.0
+        dc1 = c1-2825.0/27648.0  ; dc3 = c3-18575.0/48384.0
+        dc4 = c4-13525.0/55296.0 ; dc6 = c6-0.25
+
+        #passi dell'algoritmo
+        y_temp = y + b21*h*dydx                #first step
+        ak2 = derivs(x + a2*h, y_temp, *args)  #second step
+
+        y_temp = y + h*(b31*dydx + b32*ak2)
+        ak3 = derivs(x + a3*h, y_temp, *args)  #third step
+
+        y_temp = y + h*(b41*dydx + b42*ak2 + b43*ak3)
+        ak4 = derivs(x + a4*h, y_temp, *args)  #Fourth step
+
+        y_temp = y + h*(b51*dydx + b52*ak2 + b53*ak3 + b54*ak4)
+        ak5 = derivs(x + a5*h, y_temp, *args)  #Fifth step.
+
+        y_temp = y + h*(b61*dydx + b62*ak2 + b63*ak3 + b64*ak4 + b65*ak5)
+        ak6 = derivs(x + a6*h, y_temp, *args)  #Sixth step
+
+        #final solution, accumulate increments with proper weights
+        yout = y + h*(c1*dydx + c3*ak3 + c4*ak4 + c6*ak6)
+        #errore
+        #Estimate error as difference between fourth and fifth order methods
+        yerr = h*(dc1*dydx + dc3*ak3 + dc4*ak4 + dc5*ak5 + dc6*ak6)
+
+        return yout, yerr
+
+    # Integrazione
+
+    TINY = 1e-30
+    Y = []                              #to store solution
+    t = []                              #to store time
+    H = []                              #to store integration steps
+    x = t0                              #initial point of integration
+    h = h_t*(tf - t0)/abs(tf - t0)      #initial step (tf - t0)/abs(tf - t0) cab be +-1
+    y = init                            #initial condition
+
+    Y.append(y)                         #store the first point
+    t.append(x)                         #store the first time
+    H.append(h)                         #store the first step
+    iter = 0                            #to count iterations
+
+    while x < tf :
+
+        dydx = derivs(x, y, *args)
+
+        yscal = abs(y) + abs(h*dydx) + TINY
+        if (x+h-tf)*(x+h-t0) > 0 : h = tf-x #If stepsize can overshoot, decrease
+
+        x, ytemp, hdid, hnext = rkqs(y, dydx, x, h, tau, yscal, derivs, args)
+        H.append(hdid)     #store the steps used
+        y = ytemp          #update the solution
+        h = hdid#next      #update step
+
+        Y.append(y)        #store solution
+        t.append(x)        #store time
+        iter += 1          #update iteration
+
+    print(f'numero di terazioni = {iter}')
+
+    return np.array(Y), np.array(t), np.array(H)
 
 ## Risoluzione
 
 if __name__ == '__main__':
+
     #parametri simulazione
     o0 = 9
     #condizione iniziali
     v0 = 0
     x0 = 1
     init = np.array([x0 , v0]) #x(0), x(0)'
-    #estremo di integrazione
+    #estremi di integrazione
+    ti = 0
     tf = 10
     #numero di punti
     num_steps = int(1e5)
 
-    sol, ts0, hs0 = RKF45(num_steps, tf, osc, init, 1e-13, args=(o0,))
+    sol, ts0, hs0 = RKF45(num_steps, tf, osc, init, 1e-12, args=(o0,))
     xs0, vs0 = sol.T
+    sol, ts1, hs1 = solve(ti, tf, 0.05, init, 1e-12, osc, args=(o0, ))
+    xs1, vs1 = sol.T
 
 ## Grafico soluzioni
 
     plt.figure(1)
-    plt.title("Soluzione con alhoritmo adattivo", fontsize=15)
+    plt.title("Soluzione con algoritmo adattivo", fontsize=15)
     plt.grid()
     plt.plot(ts0, xs0, label='RKF45')
+    plt.plot(ts1, xs1, label='Cash-Karp')
     plt.legend(loc='best')
 
 ## Grafico differenze
@@ -170,8 +389,8 @@ if __name__ == '__main__':
     plt.grid()
 
     plt.subplot(122)
-    #plt.plot(ts1, Sol(ts1, o0, *init)-xs1, 'k', label='Eulero')
-    #plt.legend(loc='best')
+    plt.plot(ts1, Sol(ts1, o0, *init)-xs1, 'k', label='Cash-Karp')
+    plt.legend(loc='best')
     plt.grid()
 
 ## Grafico dell'energia
@@ -198,13 +417,13 @@ if __name__ == '__main__':
     plt.suptitle('Differenza fra enerigia iniziale  ed energia al tempo t del sistema', fontsize=20)
 
     plt.subplot(121)
-    plt.plot(ts0, U(vs0, xs0) , 'k', label='RKF45')
+    plt.plot(ts0, U(vs0, xs0), 'k', label='RKF45')
     plt.legend(loc='best')
     plt.grid()
 
     plt.subplot(122)
-    #plt.plot(ts1, U(vs1, xs1), 'k', label='Eulero')
-    #plt.legend(loc='best')
+    plt.plot(ts1, U(vs1, xs1), 'k', label='Cash-Karp')
+    plt.legend(loc='best')
     plt.grid()
 
 ## Grafico andamento passo
@@ -213,13 +432,13 @@ if __name__ == '__main__':
     plt.suptitle('Paso di integrazione', fontsize=20)
 
     plt.subplot(121)
-    plt.plot(ts0, hs0 , 'k', label='RKF45')
+    plt.plot(ts0, hs0, 'k', label='RKF45')
     plt.legend(loc='best')
     plt.grid()
 
     plt.subplot(122)
-    #plt.plot(ts1, U(vs1, xs1), 'k', label='Eulero')
-    #plt.legend(loc='best')
+    plt.plot(ts1, hs1, 'k', label='Cash-Karp')
+    plt.legend(loc='best')
     plt.grid()
 
     plt.show()
