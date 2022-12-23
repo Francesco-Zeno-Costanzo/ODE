@@ -18,6 +18,9 @@ The former are Euler's methods, classical, implicit and semi-implicit (the latte
 
 
 it is easy to verify the advantage of the latter method compared to the previous two as it is associated with a canonical transformation.
+
+# Mid-point
+
 Another first order method and symplectic integrator is the midpoint method that we present in its implicit and explicit formulation:
 implicit:
 
