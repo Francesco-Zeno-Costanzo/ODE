@@ -79,7 +79,7 @@ In this code we use the first derivative in t = 0  as a parameter that is not kn
 
 
 In some particular case, as in Schrodinger's equation where the initial condition are known, if the potential is even, we can use the energy as parameter.
-Two examples are in buca quadrata e osc.arm-s
+Two examples are in buca quadrata e osc.arm-s (see repository: quantum-mechanics)
 
 ## Adaptive integrator
 
