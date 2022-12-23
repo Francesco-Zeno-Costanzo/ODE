@@ -65,7 +65,11 @@ With classical Euler we do the prevision and then correct them with trapezoidal 
 
 ## adams-bashforth-moulton, order 4
 
-to do
+The following is a fourth-order predictor-corrector method using an explicit Adams-Bashforth scheme as a predictor and an implicit Adams-Moulton scheme as a corrector. To get started, three points of the solution are needed, which are calculated using an RK4
+
+<img src="https://latex.codecogs.com/svg.image?\\\textit{predictor:}&space;\\\overline{x}_{i&plus;1}=x_i&space;&plus;&space;\frac{h}{24}(55f(t_i,&space;x_i)-59f(t_{i-1},&space;x_{i-1})&plus;37f(t_{i-2},&space;x_{i-2})-9f(t_{i-3},&space;x_{i-3}))\\\textit{corrector:}&space;\\&space;x_{i&plus;1}=x_i&space;&plus;&space;\frac{h}{24}(9f(t_{i&plus;1},&space;\overline{x}_{i&plus;1})&plus;19f(t_{i},x_{i})-5f(t_{i-1},&space;x_{i-1})&plus;f(t_{i-2},&space;x_{i-2}))&space;" title="https://latex.codecogs.com/svg.image?\\\textit{predictor:} \\\overline{x}_{i+1}=x_i + \frac{h}{24}(55f(t_i, x_i)-59f(t_{i-1}, x_{i-1})+37f(t_{i-2}, x_{i-2})-9f(t_{i-3}, x_{i-3}))\\\textit{corrector:} \\ x_{i+1}=x_i + \frac{h}{24}(9f(t_{i+1}, \overline{x}_{i+1})+19f(t_{i},x_{i})-5f(t_{i-1}, x_{i-1})+f(t_{i-2}, x_{i-2})) " />
+
+
 
 ## Boundary problem
 
@@ -83,10 +87,10 @@ Two examples are in buca quadrata e osc.arm-s (see repository: quantum-mechanics
 
 ## Adaptive integrator
 
-The RK4(5).py code is an example of an integrator with an adaptive step (Runge–Kutta–Fehlberg method), i.e. the integration step changes during the simulation. To test it, as always, the harmonic oscillator is used.
+The adaptive.py code is an example of an integrator with an adaptive step (Runge–Kutta–Fehlberg method and Cash-Karp Runga-Kutta Method (to do) ), i.e. the integration step changes during the simulation. To test it, as always, the harmonic oscillator is used.
 Brief explanation of the method:
 
 
 <img src="https://latex.codecogs.com/svg.image?\\\begin{cases}\frac{dy}{dt}&space;=&space;f(t,&space;y(t))\\y(t_0)&space;=&space;y_0\\\end{cases}\\\begin{align*}k_1&=h&space;f(t&plus;A(0)h,&space;y)\\k_2&=h&space;f(t&plus;A(1)h,&space;y&plus;B1(1)k_1)\\k_3&=h&space;f(t&plus;A(2)h,&space;y&plus;B1(2)k_1&plus;B2(2)k_2&space;)\\k_4&=h&space;f(t&plus;A(3)h,&space;y&plus;B1(3)k_1&plus;B2(3)k_2&plus;B3(3)k_3&space;)\\k_5&=h&space;f(t&plus;A(4)h,&space;y&plus;B1(4)k_1&plus;B2(4)k_2&plus;B3(4)k_3&plus;B4(4)k_4&space;)\\k_6&=h&space;f(t&plus;A(5)h,&space;y&plus;B1(5)k_1&plus;B2(5)k_2&plus;B3(5)k_3&plus;B4(5)k_4&plus;B5(5)k_5)\end{align*}\\y_{k&plus;1}=y_k&plus;CH(0)k_1&plus;CH(1)k_2&plus;CH(2)k_3&plus;CH(3)k_4&plus;CH(4)k_5&plus;CH(5)k_6&space;\\\\\text{The&space;estimate&space;of&space;the&space;truncation&space;error&space;is:}\\TE=|CT(0)&space;k_1&space;&plus;CT(1)&space;k_2&plus;CT(2)k_3&plus;CT(3)&space;k_4&plus;CT(4)&space;k_5&plus;CT(5)&space;k_6|\\\\\text{At&space;the&space;completion&space;of&space;the&space;step,&space;a&space;new&space;stepsize&space;is&space;calculated:}\\h_{new}=0.9&space;&space;h&space;\left&space;(&space;\frac{\epsilon}{TE}&space;\right&space;)^{1/5}\\\text{If&space;TE&space;}&space;>&space;\epsilon,&space;\text{then&space;replace&space;h&space;with&space;}&space;h_{new}&space;\text{&space;and&space;repeat&space;the&space;step.&space;If&space;not&space;then&space;the&space;step&space;is&space;completed.}" title="\\\begin{cases}\frac{dy}{dt} = f(t, y(t))\\y(t_0) = y_0\\\end{cases}\\\begin{align*}k_1&=h f(t+A(0)h, y)\\k_2&=h f(t+A(1)h, y+B1(1)k_1)\\k_3&=h f(t+A(2)h, y+B1(2)k_1+B2(2)k_2 )\\k_4&=h f(t+A(3)h, y+B1(3)k_1+B2(3)k_2+B3(3)k_3 )\\k_5&=h f(t+A(4)h, y+B1(4)k_1+B2(4)k_2+B3(4)k_3+B4(4)k_4 )\\k_6&=h f(t+A(5)h, y+B1(5)k_1+B2(5)k_2+B3(5)k_3+B4(5)k_4+B5(5)k_5)\end{align*}\\y_{k+1}=y_k+CH(0)k_1+CH(1)k_2+CH(2)k_3+CH(3)k_4+CH(4)k_5+CH(5)k_6 \\\\\text{The estimate of the truncation error is:}\\TE=|CT(0) k_1 +CT(1) k_2+CT(2)k_3+CT(3) k_4+CT(4) k_5+CT(5) k_6|\\\\\text{At the completion of the step, a new stepsize is calculated:}\\h_{new}=0.9 h \left ( \frac{\epsilon}{TE} \right )^{1/5}\\\text{If TE } > \epsilon, \text{then replace h with } h_{new} \text{ and repeat the step. If not then the step is completed.}" />
 
-The coefficients are reported in the code. It doesn't always work well unfortunately
+The coefficients are reported in the code.
