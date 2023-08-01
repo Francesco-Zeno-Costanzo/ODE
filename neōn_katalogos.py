@@ -10,18 +10,18 @@ import scipy.integrate
 import scipy.optimize as so
 import  matplotlib.pyplot  as  plt
 
-
-## Soluzione analitica
-
+#============================================================================
+# Analytic solution
+#============================================================================
 
 def Sol(t, o0, x0, v0):
     """Analitic solutions
     """
     return v0/np.sqrt(o0) * np.sin(np.sqrt(o0)*t) + x0*np.cos(np.sqrt(o0)*t)
 
-
-##Equazioni da risolvere
-
+#============================================================================
+# Equation to solve
+#============================================================================
 
 def osc(t, Y, o0):
     """
@@ -50,9 +50,7 @@ def osc(t, Y, o0):
 
     return Y_dot
 
-
-## Per alcuni integratori quanto sopra va scritto così
-
+## For some methods the above should be written like this:
 
 def F(Y, o0):
     """
@@ -76,10 +74,7 @@ def F(Y, o0):
 
     return Y_ddot
 
-
-## Per altri ancora così
-
-
+## For others so:
 
 def sist(V, dt, x0, v0, o0):
     """
@@ -110,10 +105,11 @@ def sist(V, dt, x0, v0, o0):
 
     return [R1, R2]
 
+#============================================================================
+# Itegration: Explicit Euler method
+#============================================================================
 
-## Metodo di eluero
-
-def eulero(num_steps, tf, f, init, args=()):
+def eulero(num_steps, t0, tf, f, init, args=()):
     """
     Integrator with eulwer method
 
@@ -121,6 +117,8 @@ def eulero(num_steps, tf, f, init, args=()):
     ----------
     num_steps : int
         number of point of solution
+    t0 : float
+        lower bound of integration
     tf : float
         upper bound of integration
     f : callable
@@ -144,7 +142,7 @@ def eulero(num_steps, tf, f, init, args=()):
     t = np.zeros(num_steps + 1)              #array dei tempi
 
     X[0, :] = init                           #condizioni iniziali
-
+    t[0]    = t0
 
     for i in range(num_steps):
         df = f(t[i], X[i, :], *args)
@@ -153,11 +151,11 @@ def eulero(num_steps, tf, f, init, args=()):
 
     return X, t
 
+#============================================================================
+# Itegration: Semi-iplicit Euler method (sympletic)
+#============================================================================
 
-## Metodo di eluero semi implicito (integratore simplettico)
-
-
-def eulero_semi_impl(num_steps, tf, f, init, args=()):
+def eulero_semi_impl(num_steps, t0, tf, f, init, args=()):
     """
     Integrator with semi implicit eluer
 
@@ -165,6 +163,8 @@ def eulero_semi_impl(num_steps, tf, f, init, args=()):
     ----------
     num_steps : int
         number of point of solution
+    t0 : float
+        lower bound of integration
     tf : float
         upper bound of integration
     f : callable
@@ -188,7 +188,7 @@ def eulero_semi_impl(num_steps, tf, f, init, args=()):
     t = np.zeros(num_steps + 1)              #array dei tempi
 
     X[0, :] = init                           #condizioni iniziali
-
+    t[0]    = t0
 
     for i in range(num_steps):
         df = f(t[i], X[i, :], *args)
@@ -201,11 +201,11 @@ def eulero_semi_impl(num_steps, tf, f, init, args=()):
 
     return X, t
 
+#============================================================================
+# Itegration: velocity verlet  method (sympletic)
+#============================================================================
 
-## Metodo velocity verlet (integratore simplettico)
-
-
-def vel_ver(num_steps, tf, f, init, args=()):
+def vel_ver(num_steps, t0, tf, f, init, args=()):
     """
     Integrator with velocity-verlet order method
 
@@ -213,6 +213,8 @@ def vel_ver(num_steps, tf, f, init, args=()):
     ----------
     num_steps : int
         number of point of solution
+    t0 : float
+        lower bound of integration
     tf : float
         upper bound of integration
     f : callable
@@ -235,6 +237,7 @@ def vel_ver(num_steps, tf, f, init, args=()):
     t = np.zeros(num_steps + 1)              #array dei tempi
 
     X[0, :] = init                           #condizioni iniziali
+    t[0]    = t0
 
     for i in range(num_steps):  #ciclo sui tempi
 
@@ -247,11 +250,11 @@ def vel_ver(num_steps, tf, f, init, args=()):
 
     return X, t
 
+#============================================================================
+# Itegration: runge-kutta order 4 method
+#============================================================================
 
-## Metodo runge-kutta di ordine 4
-
-
-def RK4(num_steps, tf, f, init, args=()):
+def RK4(num_steps, t0, tf, f, init, args=()):
     """
     Integrator With Ruge-Kutta 4th order method
 
@@ -259,6 +262,8 @@ def RK4(num_steps, tf, f, init, args=()):
     ----------
     num_steps : int
         number of point of solution
+    t0 : float
+        lower bound of integration
     tf : float
         upper bound of integration
     f : callable
@@ -282,8 +287,8 @@ def RK4(num_steps, tf, f, init, args=()):
     t = np.zeros(num_steps + 1)              #array dei tempi
 
     X[0, :] = init                           #condizioni iniziali
-
-    #primi passi con runge kutta
+    t[0]    = t0
+    
     for i in range(num_steps):
         xk1 = f(t[i], X[i, :], *args)
         xk2 = f(t[i] + dt/2, X[i, :] + xk1*dt/2, *args)
@@ -294,11 +299,11 @@ def RK4(num_steps, tf, f, init, args=()):
 
     return X, t
 
+#============================================================================
+# Itegration: implicit mid point method (sympletic)
+#============================================================================
 
-##Soluzione numerica con il metodo del punto medio implicito (integratore simplettico)
-
-
-def implicit_mid_point(num_steps, tf, f, init, args=()):
+def implicit_mid_point(num_steps, t0, tf, f, init, args=()):
     """
     Integrator with implicit mid point method
     We must solve a syestem of equation so do
@@ -308,6 +313,8 @@ def implicit_mid_point(num_steps, tf, f, init, args=()):
     ----------
     num_steps : int
         number of point of solution
+    t0 : float
+        lower bound of integration
     tf : float
         upper bound of integration
     f : callable
@@ -331,6 +338,7 @@ def implicit_mid_point(num_steps, tf, f, init, args=()):
     t = np.zeros(num_steps + 1)              #array dei tempi
 
     X[0, :] = init                           #condizioni iniziali
+    t[0]    = t0
 
     for i in range(num_steps):
         xstart = X[i, :]
@@ -338,12 +346,11 @@ def implicit_mid_point(num_steps, tf, f, init, args=()):
         t[i + 1] = t[i] + dt
     return X, t
 
+#============================================================================
+# Itegration: Yoshida 4th order method (sympletic)
+#============================================================================
 
-## Metodo Yoshida 4-ordine (integratore simplettico)
-
-
-
-def Yoshida4(num_steps, tf, f, init, args=()):
+def Yoshida4(num_steps, t0, tf, f, init, args=()):
     """
     Integrator with Yoshida method
 
@@ -351,6 +358,8 @@ def Yoshida4(num_steps, tf, f, init, args=()):
     ----------
     num_steps : int
         number of point of solution
+    t0 : float
+        lower bound of integration
     tf : float
         upper bound of integration
     f : callable
@@ -382,6 +391,7 @@ def Yoshida4(num_steps, tf, f, init, args=()):
     t = np.zeros(num_steps + 1)              #array dei tempi
 
     X[0, :] = init                           #condizioni iniziali
+    t[0]    = t0
 
     for i in range(num_steps):               #ciclo sui tempi
         x0 = X[i, ::2]
@@ -402,11 +412,11 @@ def Yoshida4(num_steps, tf, f, init, args=()):
 
     return X, t
 
+#============================================================================
+# Itegration: prediction correction with euler and trpezoid
+#============================================================================
 
-## Predizione- correzzione usando il metodo di eulero e quello dei trapezi
-
-
-def PC(num_steps, tf, f, init, args=()):
+def PC(num_steps, t0, tf, f, init, args=()):
     """
     Integrator with predictor-corrector method
     euler and trapezoidal rule
@@ -415,6 +425,8 @@ def PC(num_steps, tf, f, init, args=()):
     ----------
     num_steps : int
         number of point of solution
+    t0 : float
+        lower bound of integration
     tf : float
         upper bound of integration
     f : callable
@@ -438,6 +450,7 @@ def PC(num_steps, tf, f, init, args=()):
     t = np.zeros(num_steps + 1)              #array dei tempi
 
     X[0, :] = init                           #condizioni iniziali
+    t[0]    = t0
 
     for i in range(num_steps):
         #predico
@@ -450,11 +463,11 @@ def PC(num_steps, tf, f, init, args=()):
 
     return X, t
 
+#============================================================================
+# Itegration: Adams-Bashforth-Moulton predictor and corretor of order 4
+#============================================================================
 
-## Predittore correttore di ordine 4 Adamas-Bashforth-Moulton
-
-
-def AMB4(num_steps, tf, f, init, args=()):
+def AMB4(num_steps, t0, tf, f, init, args=()):
     """
     Integrator with Adams-Bashforth-Moulton
     predictor and corretor of order 4
@@ -463,6 +476,8 @@ def AMB4(num_steps, tf, f, init, args=()):
     ----------
     num_steps : int
         number of point of solution
+    t0 : float
+        lower bound of integration
     tf : float
         upper bound of integration
     f : callable
@@ -486,6 +501,7 @@ def AMB4(num_steps, tf, f, init, args=()):
     t = np.zeros(num_steps + 1)              #array dei tempi
 
     X[0, :] = init                           #condizioni iniziali
+    t[0]    = t0
 
     #primi passi con runge kutta
     for i in range(3):
@@ -517,11 +533,11 @@ def AMB4(num_steps, tf, f, init, args=()):
 
     return X, t
 
+#============================================================================
+# Itegration: explicit mid point method (sympletic)
+#============================================================================
 
-## Metodo del punto medio esplicito (integratore simplettico)
-
-
-def mid_point(num_steps, tf, f, init, args=()):
+def mid_point(num_steps, t0, tf, f, init, args=()):
     """
     Integrator with mid_point rule
 
@@ -529,6 +545,8 @@ def mid_point(num_steps, tf, f, init, args=()):
     ----------
     num_steps : int
         number of point of solution
+    t0 : float
+        lower bound of integration
     tf : float
         upper bound of integration
     f : callable
@@ -552,6 +570,7 @@ def mid_point(num_steps, tf, f, init, args=()):
     t = np.zeros(num_steps + 1)              #array dei tempi
 
     X[0, :] = init                           #condizioni iniziali
+    t[0]    = t0
 
     for i in range(num_steps):
         xk1 = f(t[i], X[i, :], *args)
@@ -571,7 +590,8 @@ if __name__ == '__main__':
     v0 = 0
     x0 = 1
     init = np.array([x0 , v0]) #x(0), x(0)'
-    #estremo di integrazione
+    #estremi di integrazione
+    t0 = 0
     tf = 10
     #numero di punti
     num_steps =  10000
@@ -581,32 +601,32 @@ if __name__ == '__main__':
     sol = scipy.integrate.odeint(osc, init, ts0, args=(o0,), tfirst=True)
     xs0, vs0 = sol.T
     #eulero
-    sol, ts1 = eulero(num_steps, tf, osc, init, args=(o0,))
+    sol, ts1 = eulero(num_steps, t0, tf, osc, init, args=(o0,))
     xs1, vs1 = sol.T
     #eulero semi implicito
-    sol, ts2 = eulero_semi_impl(num_steps, tf, osc, init, args=(o0,))
+    sol, ts2 = eulero_semi_impl(num_steps, t0, tf, osc, init, args=(o0,))
     xs2, vs2 = sol.T
     #velocity verlet
-    sol, ts3 = vel_ver(num_steps, tf, F, init, args=(o0,))
+    sol, ts3 = vel_ver(num_steps, t0, tf, F, init, args=(o0,))
     xs3, vs3 = sol.T
     #runge kutta 4
-    sol, ts4 = RK4(num_steps, tf, osc, init, args=(o0,))
+    sol, ts4 = RK4(num_steps, t0, tf, osc, init, args=(o0,))
     xs4, vs4 = sol.T
     #punto medio implicito
-    sol, ts5 = implicit_mid_point(num_steps, tf, sist, init, args=(o0,))
+    sol, ts5 = implicit_mid_point(num_steps, t0, tf, sist, init, args=(o0,))
     xs5, vs5 = sol.T
     #Yoshida
-    sol, ts6 = Yoshida4(num_steps, tf, F, init, args=(o0,))
+    sol, ts6 = Yoshida4(num_steps, t0, tf, F, init, args=(o0,))
     xs6, vs6 = sol.T
     #Pedittore, correttore
-    sol, ts7 = PC(num_steps, tf, osc, init, args=(o0,))
+    sol, ts7 = PC(num_steps, t0, tf, osc, init, args=(o0,))
     xs7, vs7 = sol.T
     #Pedittore, correttore quarto ordine Adamas-Bashforth-Moulton
-    sol, ts8 = AMB4(num_steps, tf, osc, init, args=(o0,))
+    sol, ts8 = AMB4(num_steps, t0, tf, osc, init, args=(o0,))
     xs8, vs8 = sol.T
     #punto medio esplicito
     #Pedittore, correttore quarto ordine Adamas-Bashforth-Moulton
-    sol, ts9 = mid_point(num_steps, tf, osc, init, args=(o0,))
+    sol, ts9 = mid_point(num_steps, t0, tf, osc, init, args=(o0,))
     xs9, vs9 = sol.T
 
 
