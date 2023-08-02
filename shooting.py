@@ -81,7 +81,7 @@ def AMB4(num_steps, t0, tf, f, init, args=()):
 # To visualize the function to find the zeros
 #============================================================================
 
-def F(N, x0, start, xi, xf, step, x1, n, f):
+def F(N, x0, start, xi, xf, step, x1, n, f, args=()):
     '''
     Compute the function to find the zeros to have only an idea of ​​where to look
     Parameters
@@ -104,22 +104,25 @@ def F(N, x0, start, xi, xf, step, x1, n, f):
         number of function values ​​to calculate
     f : callable
         function to integrate, must accept vectorial input
+    args : tuple, optional
+        extra arguments to pass to f
     Returns
     -------
     xs : one dimensional array
         solution of the equation
     '''
+    
     P = np.zeros(n)
     S = np.linspace(start, start+n*step, n)
     for j, s in enumerate(S):
-        P[j] = AMB4(N, xi, xf, f, init=(x0, s))[0][-1, 0]
-    return S, P-x1
+        P[j] = AMB4(N, xi, xf, f, init=(x0, s), args=args)[0][-1, 0]
+    return S, P - x1
 
 #============================================================================
 # Binary research to find the right solution with shooting method
 #============================================================================
 
-def SH(N, x0, start, xi, xf, step, x1, tau, f):
+def SH(N, x0, start, xi, xf, step, x1, tau, f, args=()):
     '''
     Function that calculates zeros with the bisection method
     Parameters
@@ -142,6 +145,8 @@ def SH(N, x0, start, xi, xf, step, x1, tau, f):
         tollerance on find value
     f : callable
         function to integrate, must accept vectorial input
+    args : tuple, optional
+        extra arguments to pass to f
     Returns
     -------
     m : float
@@ -150,11 +155,11 @@ def SH(N, x0, start, xi, xf, step, x1, tau, f):
         solution of the equation
     '''
     a = start
-    sol = AMB4(N, xi, xf, f, init=(x0, a))
+    sol = AMB4(N, xi, xf, f, init=(x0, a), args=args)
     k = sol[0][-1, 0] - x1
     while True:
         b = a + step
-        sol = AMB4(N, xi, xf, f, init=(x0, b))
+        sol = AMB4(N, xi, xf, f, init=(x0, b), args=args)
         D = sol[0][-1, 0] - x1
         if (k*D)<0.0:
             break
@@ -162,7 +167,7 @@ def SH(N, x0, start, xi, xf, step, x1, tau, f):
         a = b
     while abs(a - b)>tau:
         m = (a + b)/2.0
-        sol = AMB4(N, xi, xf, f, init=(x0, m))
+        sol = AMB4(N, xi, xf, f, init=(x0, m), args=args)
         M = sol[0][-1, 0] - x1
         if (M*k)>0 :
             k = M
@@ -176,21 +181,51 @@ def SH(N, x0, start, xi, xf, step, x1, tau, f):
 # Main code
 #============================================================================
 
-def f(t, Y):
+def f(t, Y, g, o02):
     x, v = Y
     x_dot = v
-    v_dot = (3/2)*x**2
+    v_dot = -g*v - o02*x
     return np.array([x_dot, v_dot])
 
-xi  = 0        # left end of the interval
-xf  = 1        # right end of the range
-N   = 1000     # number of points
-x0  = 4        # initial value at the left end
-x1  = 1        # value we want assume the solution in the right extreme
-tau = 1e-10    # tollerance
+g   = 0.3                    # damping factor
+o02 = 1                      # proper frequency squared
+o2  = o02 - (g/2)**2         # frequency squared
+k   = 2                      # parameter for time
+xi  = 0                      # left end of the interval
+xf  = k*np.pi/np.sqrt(o2)    # right end of the range
+N   = 1000                   # number of points
+x0  = 1                      # initial value at the left end
+x1  = 0.38548                # value we want assume the solution in the right extreme
+tau = 1e-10                  # tollerance
+'''
+Evry solution of this differential equation for severalò initial condition
+non velocity assume the same value at each xf for all k
+'''
 
+#============================================================================
+# Expositive plot, more than one solution can be good
+#============================================================================
 
-t, y = F(N, x0, -40, xi, xf, 0.0833, x1, 408, f)
+n      = 50 # number of curves
+start  = -2
+step   = 0.05
+v_i    = np.linspace(start, start+n*step, n)
+colors = plt.cm.jet(np.linspace(0, 1, n))
+plt.figure(0)
+for i in range(n):
+    sol, t = AMB4(N, xi, xf, f, init=(x0, v_i[i]), args=(g, o02))
+    y, vy  = sol.T
+    plt.plot(t, y, c=colors[i])
+#plt.show();exit()
+
+#============================================================================
+# function to find the zeros
+#============================================================================
+# reset limit value to ave only one solution
+xf = 5
+x1 = 0.1862
+
+t, y = F(N, x0, start, xi, xf, step, x1, n, f, args=(g, o02))
 # to visualize the zeros
 plt.figure(1)
 plt.title('Function to find the zeros of', fontsize=20)
@@ -198,28 +233,24 @@ plt.ylabel('x(1;s)-x(1)', fontsize=15)
 plt.xlabel('s', fontsize=15)
 plt.grid()
 plt.plot(t, 0*t, color='red', linestyle='--')
-plt.plot(t, y)
+plt.plot(t, y, 'b')
+#plt.show();exit()
 
-#===============================================================
+#============================================================================
+# final solution
+#============================================================================
 
-v0, sol1 = SH(N, x0, -40, xi, xf, 0.1, x1, tau, f)
-v1, sol2 = SH(N, x0, -10, xi, xf, 0.1, x1, tau, f)
+v0, sol1 = SH(N, x0, -2, xi, xf, 0.1, x1, tau, f, args=(g, o02))
 
 sol, t1 = sol1
 y1 , _  = sol.T 
-sol, t2 = sol2
-y2 , _  = sol.T
 
 plt.figure(2)
-plt.title('Two different initial conditions \n give the same boundary condition', fontsize=15)
-           
-print('x_1(t_f) - x1 = %e \nx_2(t_f) - x1 = %e ' %(y1[-1]-x1, y2[-1]-x1))
 
 plt.ylabel('x(t)', fontsize=15)
 plt.xlabel('t', fontsize=15)
 plt.grid()
-plt.plot(t1, y1, 'k', label='$x_1(t)$, $\dot{x}(t=0)$'+f'={v0:.3f}')
-plt.plot(t2, y2, 'b', label='$x_2(t)$, $\dot{x}(t=0)$'+f'={v1:.3f}')
+plt.plot(t1, y1, 'b', label='$x_1(t)$, $\dot{x}(t=0)$'+f'={v0:.3f}')
 plt.legend(loc='best')
 plt.show()
 
