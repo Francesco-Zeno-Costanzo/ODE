@@ -1,8 +1,5 @@
 '''
-Boundary value problem
-x''(t) = 3/2 x(t)
-x(0) = x0
-x(1) = x1
+Boundary value problem with shooting method
 '''
 import numpy as np
 import  matplotlib.pyplot  as  plt
@@ -111,7 +108,7 @@ def F(N, x0, start, xi, xf, step, x1, n, f, args=()):
     xs : one dimensional array
         solution of the equation
     '''
-    
+
     P = np.zeros(n)
     S = np.linspace(start, start+n*step, n)
     for j, s in enumerate(S):
@@ -216,6 +213,10 @@ for i in range(n):
     sol, t = AMB4(N, xi, xf, f, init=(x0, v_i[i]), args=(g, o02))
     y, vy  = sol.T
     plt.plot(t, y, c=colors[i])
+
+plt.title(f'Several solutions with k={k}', fontsize=15)
+plt.ylabel('y(t)', fontsize=15)
+plt.xlabel('t', fontsize=15)
 #plt.show();exit()
 
 #============================================================================
@@ -229,7 +230,7 @@ t, y = F(N, x0, start, xi, xf, step, x1, n, f, args=(g, o02))
 # to visualize the zeros
 plt.figure(1)
 plt.title('Function to find the zeros of', fontsize=20)
-plt.ylabel('x(1;s)-x(1)', fontsize=15)
+plt.ylabel('y(1;s)-y(1)', fontsize=15)
 plt.xlabel('s', fontsize=15)
 plt.grid()
 plt.plot(t, 0*t, color='red', linestyle='--')
@@ -243,14 +244,14 @@ plt.plot(t, y, 'b')
 v0, sol1 = SH(N, x0, -2, xi, xf, 0.1, x1, tau, f, args=(g, o02))
 
 sol, t1 = sol1
-y1 , _  = sol.T 
+y1 , _  = sol.T
 
 plt.figure(2)
-
-plt.ylabel('x(t)', fontsize=15)
+plt.title(f'Solution')
+plt.ylabel('y(t)', fontsize=15)
 plt.xlabel('t', fontsize=15)
 plt.grid()
-plt.plot(t1, y1, 'b', label='$x_1(t)$, $\dot{x}(t=0)$'+f'={v0:.3f}')
+plt.plot(t1, y1, 'b', label='$y_1(t)$, $\dot{y}(t=0)$'+f'={v0:.3f}')
 plt.legend(loc='best')
 plt.show()
 
