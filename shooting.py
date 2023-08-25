@@ -247,7 +247,7 @@ sol, t1 = sol1
 y1 , _  = sol.T
 
 plt.figure(2)
-plt.title(f'Solution')
+plt.title(f'Solution', fontsize=15)
 plt.ylabel('y(t)', fontsize=15)
 plt.xlabel('t', fontsize=15)
 plt.grid()
