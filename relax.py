@@ -10,12 +10,7 @@ def relax(f, y0, y1, x, init, args=(), tol=1e-8, max_iter=100, dense_output=Fals
     '''
     Implementation of relaxation method for ODE 2pt-BVP.
     The equation must be in the form: y''(x) = f(x, y, y')
-    Using y[0]=y0 and y[-1]=y1, the discretizzation lead to:
-    
-    y[i-1] - 2y[i] + y[i+1]                 y[i-1] - y[i+1]
-    ----------------------- = f(x[i], y[i], --------------- )
-              h**2                                2h
-    
+
     Parameters
     ----------
     f : callable
@@ -24,7 +19,7 @@ def relax(f, y0, y1, x, init, args=(), tol=1e-8, max_iter=100, dense_output=Fals
         required value of solution at boundary
     x : 1darray
         array of position, or time, independent variable
-    init : 1darray 
+    init : 1darray
         Initial guess.
     args : tuple, optional
         Extra arguments passed to f
@@ -34,7 +29,7 @@ def relax(f, y0, y1, x, init, args=(), tol=1e-8, max_iter=100, dense_output=Fals
         after max_it iteration the code stop raising an exception
     dense_output : bool, optional, default False
         true for full and number of iteration
-    
+
     Return
     ------
     yo : 1darray
@@ -58,7 +53,7 @@ def relax(f, y0, y1, x, init, args=(), tol=1e-8, max_iter=100, dense_output=Fals
     #for full output
     Y = []
     if dense_output : Y.append(yo)
-    
+
     while True:
         # for jacobian computation
         df = np.zeros(d2.shape)
@@ -76,7 +71,7 @@ def relax(f, y0, y1, x, init, args=(), tol=1e-8, max_iter=100, dense_output=Fals
         if R < tol:
             yo = yn
             break
-            
+
         if it > max_iter:
             raise Exception("to many iteration")
 
@@ -84,7 +79,7 @@ def relax(f, y0, y1, x, init, args=(), tol=1e-8, max_iter=100, dense_output=Fals
         yo = yn
         it = it + 1
         if dense_output : Y.append(yo)
-    
+
     if dense_output:
         return Y, it
     else:
@@ -99,7 +94,7 @@ def f(t, y, h, g, o02):
     RHS of differential equations y'' = f
     f can be a function non only of y but also y' so
     we use a second order approximation to compute y'
-    
+
     Parameter
     ---------
     t : 1darray
@@ -110,7 +105,7 @@ def f(t, y, h, g, o02):
         step's size for derivative computation
     g, o02 : float
         parameter of our differential equation
-    
+
     Return
     ------
     y_ddot : float
@@ -149,5 +144,8 @@ print(f"{n} iterations required")
 for y in Y:
     plt.plot(x, y)
 
+plt.title("Solution via relaxation method", fontsize=15)
+plt.xlabel("x", fontsize=15)
+plt.ylabel("y", fontsize=15)
 plt.grid()
 plt.show()
