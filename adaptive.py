@@ -311,26 +311,35 @@ if __name__ == '__main__':
         """Analitic solutions
         """
         #return (1-t)*np.exp(t)
-        return p[2]/np.sqrt(p[0])*np.sin(np.sqrt(p[0])*t) + p[1]*np.cos(np.sqrt(p[0])*t)
+        #return p[2]/np.sqrt(p[0])*np.sin(np.sqrt(p[0])*t) + p[1]*np.cos(np.sqrt(p[0])*t)
         #return -2/(t**2 -2)
+        return np.sin(2*t)*np.cos(t)/(1+(t-3)**2)
 
 
     def eq(t, Y, o0):
         """ Equation to solve
         """
-        x, v = Y
+        #x, v = Y
         #-----------------
         #x_dot = v
         #v_dot = 2*v - x
         #-----------------
-        x_dot = v
-        v_dot = - o0 * x
+        #x_dot = v
+        #v_dot = - o0 * x
         #-----------------
-        Y_dot = np.array([x_dot, v_dot])
+        #Y_dot = np.array([x_dot, v_dot])
 
-        #x = Y
+        x = Y
+        #-----------------
         #x_dot = x**2 * t
-        #Y_dot = np.array([x_dot])        
+        #-----------------
+        d  = 1 + (t-3)**2
+        a1 = -d*np.sin(t)*np.sin(2*t)
+        a2 =  d*np.cos(t)*np.cos(2*t)*2
+        a3 =   -np.cos(t)*np.sin(2*t)*2*(t-3)
+        x_dot = (a1+a2+a3)/d**2
+        #-----------------
+        Y_dot = np.array([x_dot])        
 
         return Y_dot
 
@@ -339,15 +348,15 @@ if __name__ == '__main__':
     # Initial conditions
     v0 = 0
     x0 = 1
-    init = np.array([x0 , v0]) #x(0), x(0)'
+    init = np.array([0 ])#, v0]) #x(0), x(0)'
     # Bound of interval
     ti = 0
     tf = 10
 
     sol, ts0, hs0 = RKF45(ti, tf, 0.01, eq, init, 1e-12, args=(o0,))
-    xs0, _= sol.T
+    xs0, = sol.T
     sol, ts1, hs1 = solve(ti, tf, 0.01, eq, init, 1e-12, args=(o0,))
-    xs1, _= sol.T
+    xs1, = sol.T
 
     # Solutions
     ts3 = np.linspace(ti, tf, int(1e4))
