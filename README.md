@@ -206,7 +206,7 @@ $$
 Which has the form of a non-linea system of equations:
 
 $$
-\mathbf{F}(\mathbf{y}) = D_2 \mathbf{y} - \mathbf{f}(\mathbf{x}, \mathbf{y}, \mathbf{y}') + \mathbf{b} = \mathbf{0}.
+\mathbf{F}(\mathbf{y}) = D_2 \mathbf{y} - \mathbf{f}(\mathbf{x}, \mathbf{y}, \mathbf{y}') - \mathbf{b} = \mathbf{0}.
 $$
 
 where:
