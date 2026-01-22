@@ -293,7 +293,7 @@ def solve(t0, tf, h_t, derivs, init, tau, args=()):
         x, ytemp, hdid, hnext = rkqs(y, dydx, x, h, tau, yscal, derivs, args)
         H.append(hdid)     # Store the steps used
         y = ytemp          # Update the solution
-        h = hnext          # Update step (sometimes hdid?? why??)
+        h = hnext          # Update step
 
         Y.append(y)        # Store solution
         t.append(x)        # Store time
