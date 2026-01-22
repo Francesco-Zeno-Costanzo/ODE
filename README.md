@@ -88,15 +88,7 @@ $$
 
 A method that could not miss the is :runge kutta of 4 th order:
 
-$$
-y_{k+1}
-=
-y_k
-+
-\frac{\Delta t}{6}
-\left(
-k_1 + 2k_2 + 2k_3 + k_4
-\right)
+$$ y_{k+1} = y_k + \frac{\Delta t}{6} \left( k_1 + 2k_2 + 2k_3 + k_4 \right)
 $$
 
 where:
@@ -133,13 +125,12 @@ In this code it is implemented using the classic euler and the trapezoidal rule.
 With classical Euler we do the prevision and then correct them with trapezoidal rule:
 
 $$
-\text{Predictor:}\qquad
+\begin{aligned}
+\text{Predictor:}& \qquad
 \overline{y}_{k+1} = y_k + \Delta t \hspace{1 mm} f(t_k, y_k)
-$$
-
-$$
-\text{Corrector:}\qquad
+\text{Corrector:}& \qquad
 y_{k+1} = y_k + \frac{\Delta t}{2} \left[ f(t_k, y_k) + f(t_{k+1}, \overline{y}_{k+1})\right]
+\end{aligned}
 $$
 
 
@@ -149,13 +140,12 @@ $$
 The following is a fourth-order predictor-corrector method using an explicit Adams-Bashforth scheme as a predictor and an implicit Adams-Moulton scheme as a corrector. To get started, three points of the solution are needed, which are calculated using an RK4
 
 $$
-\text{Predictor:}\quad
+\begin{aligned}
+\text{Predictor:}& \quad
 \overline{x}_{i+1} = x_i + \frac{h}{24}\left( 55 f_i - 59 f_{i-1} + 37 f_{i-2} - 9 f_{i-3}\right)
-$$
-
-$$
-\text{Corrector:}\quad
+\text{Corrector:}& \quad
 x_{i+1} = x_i + \frac{h}{24} \left( 9 f_{i+1} + 19 f_i - 5 f_{i-1} + f_{i-2} \right)
+\end{aligned}
 $$
 
 
@@ -236,6 +226,7 @@ k_6 &= h f(t + A_5 h, y + B_{51} k_1 + B_{52} k_2 + B_{53} k_3 + B_{54} k_4 + B_
 $$
 
 The extimention of the truncation error is:
+
 $$
 TE = \left| \sum_{i=1}^{6} CT_i k_i \right|
 $$
