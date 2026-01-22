@@ -363,5 +363,3 @@ h_{\text{next}} =
 5h, & \text{otherwise}.
 \end{cases}
 $$
-
-	​
