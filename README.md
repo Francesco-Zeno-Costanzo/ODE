@@ -5,7 +5,7 @@ The "neōn_katalogos" file (as the name might suggest) is a list containing seve
 
 We briefly present the various methods used, each of these, unless otherwise specified, is contained as an example in the file neōn katalogos:
 
-## Initiaal value problem
+## Initial value problem
 ### Euler
 
 The former are Euler's methods, classical, implicit and semi-implicit (the latter symplectic).
@@ -127,7 +127,7 @@ With classical Euler we do the prevision and then correct them with trapezoidal 
 $$
 \begin{aligned}
 \text{Predictor:}& \qquad
-\overline{y}_{k+1} = y_k + \Delta t \hspace{1 mm} f(t_k, y_k)
+\overline{y}_{k+1} = y_k + \Delta t \hspace{1 mm} f(t_k, y_k) \\
 \text{Corrector:}& \qquad
 y_{k+1} = y_k + \frac{\Delta t}{2} \left[ f(t_k, y_k) + f(t_{k+1}, \overline{y}_{k+1})\right]
 \end{aligned}
@@ -142,7 +142,7 @@ The following is a fourth-order predictor-corrector method using an explicit Ada
 $$
 \begin{aligned}
 \text{Predictor:}& \quad
-\overline{x}_{i+1} = x_i + \frac{h}{24}\left( 55 f_i - 59 f_{i-1} + 37 f_{i-2} - 9 f_{i-3}\right)
+\overline{x}_{i+1} = x_i + \frac{h}{24}\left( 55 f_i - 59 f_{i-1} + 37 f_{i-2} - 9 f_{i-3}\right) \\
 \text{Corrector:}& \quad
 x_{i+1} = x_i + \frac{h}{24} \left( 9 f_{i+1} + 19 f_i - 5 f_{i-1} + f_{i-2} \right)
 \end{aligned}
