@@ -187,7 +187,69 @@ In some particular case, as in Schrodinger's equation where the initial conditio
 Two examples are in buca quadrata e osc.arm-s (see repository: quantum-mechanics)
 
 ### Relaxation
+Considering the BVP:
 
+$$
+\begin{cases}
+y''(x) = f\left(x, y(x), y'(x)\right), \\
+y(x_0) = y_0, \\
+y(x_1) = y_1.
+\end{cases}
+$$
+
+If we discretize the problem we obtain:
+
+$$
+\frac{y_{i+1} - 2y_i + y_{i-1}}{h^2} = f \left(x_i, y_i, \frac{y_{i+1} - y_{i-1}}{2h}.\right)
+$$
+
+Which has the form of a non-linea system of equations:
+
+$$
+\mathbf{F}(\mathbf{y}) = D_2 \mathbf{y} - \mathbf{f}(\mathbf{x}, \mathbf{y}, \mathbf{y}') + \mathbf{b} = \mathbf{0}.
+$$
+
+where:
+
+$$
+D_2  \hspace{1 mm} \mathbf{y} =
+\frac{1}{h^2}
+\begin{pmatrix}
+-2 & 1  &        &        & 0 \\
+1  & -2 & 1      &        &   \\
+   & \ddots & \ddots & \ddots &   \\
+   &        & 1      & -2 & 1 \\
+0  &        &        & 1  & -2
+\end{pmatrix}
+\mathbf{y}.
+$$
+
+and
+
+$$
+\mathbf{b} =
+\frac{1}{h^2}
+\begin{pmatrix}
+y_0 \\
+0 \\
+\vdots \\
+0 \\
+y_1
+\end{pmatrix}.
+$$
+
+The basic idea is, once we have our nonlinear system, linearize it and solve it. Starting from an initial guess, for example, a straight line connecting the two points that are the boundary conditions, the algorithm relaxes towards the solution of the equation.
+To solve the system we use the Newton method:
+
+$$
+\mathbf{y}^{(k+1)} = \mathbf{y}^{(k)} - \left( D_2 - J_f(\mathbf{y}^{(k)}) \right)^{-1} \mathbf{F}(\mathbf{y}^{(k)}),
+$$
+
+where:
+
+$$
+\left[J_f\right]_{ij} = \frac{\partial f_i}{\partial y_j}.
+$$
 
 
 
@@ -239,5 +301,67 @@ $$
 
 The coefficients are reported in the code.
 
-### 
-Cash-Karp Runga-Kutta
+### Cash-Karp Runga-Kutta
+This is an adaptive step-size Runge–Kutta integrator based on the Cash–Karp embedded scheme (4th–5th order)
+
+We consider a system of first-order ODEs:
+
+$$
+\frac{d\mathbf{y}}{dt} = \mathbf{f}(t, \mathbf{y}),
+\qquad
+\mathbf{y}(t_0) = \mathbf{y}_0,
+$$
+
+We write the solution as:
+
+$$
+\mathbf{y}_{n+1} = \mathbf{y}_n + h \sum_{i=1}^s c_i \mathbf{k}_i, 
+$$
+
+where:
+
+$$
+\mathbf{k}_i = \mathbf{f} \left( t_n + a_i h, \hspace{1 mm} \mathbf{y}_n + h \sum_{j<i} b_{ij} \mathbf{k}_j \right).
+$$
+
+The error is estimated from the difference between the fifth- and fourth-order solutions:
+
+$$
+\mathbf{y}_{\text{err}} = h \sum_{i=1}^6 (C_i - D_i) \hspace{1 mm} \mathbf{k}_i.
+$$
+
+The scaled error is defined as:
+
+$$
+\text{err}_{\max} = \max_i \left| \frac{y_{\text{err},i}}{y_{\text{scal},i}} \right|,
+$$
+
+with
+
+$$
+y_{\text{scal},i} = |y_i| + |h \hspace{1 mm} \dot y_i| + \text{TINY}.
+$$
+
+The step is accepted if:
+
+$$
+\text{err}_{\max} \le \varepsilon.
+$$
+
+If the error is too large, the step is reduced:
+
+$$
+h_{\text{new}} = \text{SAFETY} \cdot h \cdot \text{err}_{\max}^{\text{PSHRINK}}.
+$$
+
+If the step is successful, the next step is predicted as:
+
+$$
+h_{\text{next}} =
+\begin{cases}
+\text{SAFETY} \cdot h \cdot \text{err}_{\max}^{ \text{PGROW}}, & \text{err}_{\max} > \text{ERRCON}, \\
+5h, & \text{otherwise}.
+\end{cases}
+$$
+
+	​
