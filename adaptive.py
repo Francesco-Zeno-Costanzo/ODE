@@ -1,5 +1,6 @@
 import numpy as np
 import matplotlib.pyplot as plt
+from scipy.integrate import solve_ivp
 
 ## Runge–Kutta–Fehlberg method
 
@@ -357,6 +358,9 @@ if __name__ == '__main__':
     xs0, = sol.T
     sol, ts1, hs1 = solve(ti, tf, 0.01, eq, init, 1e-12, args=(o0,))
     xs1, = sol.T
+    sol = solve_ivp(lambda t, y: eq(t, y, o0), (ti, tf), init, method='RK45', atol=1e-12, rtol=1e-12)
+    xs2, ts2 = sol.y[0], sol.t
+ 
 
     # Solutions
     ts3 = np.linspace(ti, tf, int(1e4))
@@ -366,21 +370,31 @@ if __name__ == '__main__':
     plt.grid()
     plt.plot(ts0, xs0, label='RKF45')
     plt.plot(ts1, xs1, label='Cash-Karp')
+    plt.plot(ts2, xs2, label='solve_ivp')
     plt.plot(ts3, Sol(ts3, par), 'k', label='analytical')
     plt.legend(loc='best')
 
     # Global Error
     plt.figure(2)
     plt.suptitle('analytical - numerical', fontsize=20)
+    plt.tight_layout()
 
-    plt.subplot(121)
-    plt.plot(ts0, Sol(ts0, par)-xs0, 'k', label='RKF45')
+    plt.subplot(311)
+    plt.plot(ts0, abs(Sol(ts0, par)-xs0), 'k', label='RKF45')
     plt.legend(loc='best')
+    plt.yscale('log')
     plt.grid()
 
-    plt.subplot(122)
-    plt.plot(ts1, Sol(ts1, par)-xs1, 'k', label='Cash-Karp')
+    plt.subplot(312)
+    plt.plot(ts1, abs(Sol(ts1, par)-xs1), 'k', label='Cash-Karp')
     plt.legend(loc='best')
+    plt.yscale('log')
+    plt.grid()
+
+    plt.subplot(313)
+    plt.plot(ts2, abs(Sol(ts2, par)-xs2), 'k', label='solve_ivp')
+    plt.legend(loc='best')
+    plt.yscale('log')
     plt.grid()
 
     # Size step evolution
